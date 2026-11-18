@@ -84,3 +84,17 @@ Een toernooi opent met alleen een compacte bovenbalk en een bracket dat het rest
 Teamkeuze gebruikt een schermvullend formulier: zoeken en filters bovenaan, een grote scrollbare lijst in het midden en de volgende stap onderaan. Na kiezen wordt de zoekopdracht geleegd voor het volgende team.
 
 Er worden nu **453 lokale afbeeldingen** meegeleverd: **420 clublogo's en vlaggen voor alle 33 nationale ploegen**. `public/data/logo-sources.json` legt de koppelingen en bronnen vast. Deze bestanden worden gepubliceerd en offline gecachet; ze zijn niet afhankelijk van de eerder onbereikbare SoFIFA-CDN. Bronnen: FCLOGO/fclogo.top, luukhopman/football-logos, qiulot/clublogos en lipis/flag-icons. De beschikbare licentieteksten zijn meegeleverd. Voor de resterende 281 clubs bestaat nog geen gecontroleerde lokale koppeling; daarvoor wordt de oorspronkelijke bron geprobeerd en blijven initialen de terugval. De selectiegegevens en spelers-ID's zijn niet veranderd.
+
+## Teams wisselen, verwijderen en strafschoppen
+
+In het toernooimenu staat **Teams wisselen**. Kies een teamplek en tik op een huidige deelnemer om ze om te ruilen, of op een ander team om de deelnemer te vervangen. Huidige deelnemers staan bovenaan. Ook het wedstrijdformulier heeft knoppen om de teams te wijzigen. Speelde een betrokken team al wedstrijden, dan toont de app de geraakte uitslagen en vraagt bevestiging voordat alleen die takken worden teruggezet. Niet-betrokken wedstrijden blijven staan.
+
+Elke toernooikaart heeft een verwijderknop; dezelfde actie staat in het toernooimenu. De bevestiging vermeldt de naam en het aantal uitslagen. De ranglijsten worden na verwijderen automatisch opnieuw berekend.
+
+Een nieuw wedstrijdformulier toont de strafschoppenvelden niet. Open ze met **＋ Strafschoppenserie**. Alleen bij een al opgeslagen serie zijn de velden bij het opnieuw openen zichtbaar. Een gelijkspel zonder beslissende serie kan nog steeds niet worden bevestigd. De serie blijft buiten de doelpuntenranglijsten.
+
+## Soccer Aid en adidas All-Star
+
+De door de gebruiker genoemde teams zijn als **speciale, handmatig aangemelde teams** toegevoegd. Ze zijn op naam en via **Speciale teams** vindbaar, inclusief de zoekvariant ‘adidas all stars’. Hun historische FIFA 22-selecties zijn **niet geverifieerd**: de netwerkproxy blokkeert FIFA Index, SoFIFA, FIFA CM en EA met CONNECT 403. Zoekpogingen via beschikbare GitHub-bronnen leverden geen betrouwbare speciale FIFA 22-rosters op. Er zijn daarom geen legenden of spelerskoppelingen verzonnen. Doelpunten kunnen voorlopig als onbekend worden geregistreerd.
+
+Er is een aanvullende netwerkallowlist opgeslagen in het omgevingsconcept voor `www.fifaindex.com`, `fifaindex.com`, `sofifa.com`, `www.fifacm.com` en `www.ea.com`. Dit concept is niet vanzelf actief; na activeren kan bronverificatie worden hervat. De bestaande clubs, nationale selecties, spelers-ID's en eerdere toernooisnapshots zijn behouden.
