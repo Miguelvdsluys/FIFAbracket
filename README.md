@@ -47,7 +47,7 @@ De SQLite-opslag gebruikt revisiecontrole: een verouderde browser kan wijziginge
 
 ## Online via GitHub Pages
 
-De repository bevat `.github/workflows/pages.yml`. Kies op GitHub bij **Settings → Pages → Build and deployment → Source** de optie **GitHub Actions**. Een push op `main` of handmatige start van de workflow **Publiceer GitHub Pages** publiceert de app.
+De website wordt gepubliceerd vanuit de branch `gh-pages`. De repository-instelling voor Pages gebruikt **Deploy from a branch → gh-pages → / (root)**. Updates op `main` worden automatisch getest en gebouwd. Publiceer een nieuwe versie met `npm run publish:pages` vanuit deze checkout; dit vereist Git-schrijftoegang tot de repository. Het script bouwt de app en werkt `gh-pages` bij zonder force-push. GitHub start daarna de standaardworkflow **pages build and deployment**. De website-instellingen blijven ongewijzigd.
 
 `npm run build` maakt `dist/` met relatieve assetpaden, zodat de app ook onder `/FIFAbracket/` werkt. Deze versie bewaart de gegevens in **IndexedDB van je eigen browser**, niet in SQLite op een server. De site is publiek, maar je lokale toernooidata wordt niet naar GitHub verstuurd en niet tussen apparaten of vrienden gesynchroniseerd. Wissen van sitegegevens wist ook de lokale database. De bestaande Node-server blijft SQLite gebruiken.
 

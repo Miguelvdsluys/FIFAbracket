@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test",
-    "build": "node scripts/build-pages.js"
+    "build": "node scripts/build-pages.js",
+    "publish:pages": "node scripts/publish-pages.js"
   },
   "engines": {
     "node": ">=24"
