@@ -2,7 +2,7 @@ const VERSION='__VERSION__';
 const PREFIX=`fifa22-${new URL(self.registration.scope).pathname}-`;
 const CACHE=PREFIX+VERSION;
 const IMAGE_CACHE=PREFIX+'team-images-v1';
-const FILES=['./','./index.html','./app.js','./team-drag.js','./bracket.js','./catalog.js','./data/fifa22-sofifa-220002.json','./engine.js','./storage.js','./style.css','./pwa.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable.png','./icons/apple-touch-icon.png'];
+const FILES=['./','./index.html','./app.js','./personal-data.js','./transfer.js','./team-drag.js','./bracket.js','./catalog.js','./data/fifa22-sofifa-220002.json','./engine.js','./storage.js','./style.css','./pwa.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable.png','./icons/apple-touch-icon.png'];
 const LOGO_FILES=/* local-assets */ '__LOGO_FILES__';
 if(Array.isArray(LOGO_FILES))FILES.push(...LOGO_FILES);
 const urls=FILES.map(path=>new URL(path,self.registration.scope).href);
