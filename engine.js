@@ -1,13 +1,32 @@
 export const uid=()=>crypto.randomUUID();
-export function createTournament(name,version,teamIds,shuffle=false){
- let ids=[...teamIds];if(ids.length<2||ids.length>32||new Set(ids).size!==ids.length)throw Error('Kies 2–32 unieke teams.');
+export function createTournament(name,version,teamIds,shuffle=false,teamCount=teamIds.length){
+ let ids=[...teamIds];
+ if(!Number.isInteger(teamCount)||teamCount<2||teamCount>32||ids.length<2||ids.length>teamCount||new Set(ids).size!==ids.length)throw Error('Kies minimaal 2 unieke teams en maximaal het gekozen aantal plekken.');
  if(ids.some(id=>!version.teams.find(t=>t.id===id)))throw Error('Onbekend team.');
  if(shuffle)for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
- const size=2**Math.ceil(Math.log2(ids.length)),byes=size-ids.length,slots=[];
- for(let i=0;i<byes;i++)slots.push(ids.shift(),null);slots.push(...ids);
+ const size=2**Math.ceil(Math.log2(teamCount)),byes=size-teamCount;
  const rounds=[];for(let count=size/2;count>=1;count/=2)rounds.push(Array.from({length:count},()=>({id:uid(),teams:[null,null],result:null})));
- rounds[0].forEach((m,i)=>{m.teams=slots.slice(i*2,i*2+2);m.bye=!m.teams[1];});
- const t={id:uid(),name,createdAt:new Date().toISOString(),version:{...structuredClone(version),teams:structuredClone(version.teams.filter(t=>teamIds.includes(t.id))),players:structuredClone(version.players.filter(p=>teamIds.includes(p.teamId)))},teamIds:[...teamIds],rounds};propagate(t);return t;
+ rounds[0].forEach((m,i)=>{m.bye=i<byes;});
+ const positions=[];
+ // When starting early, put the first two teams in a playable match first.
+ const indices=ids.length<teamCount?[...rounds[0].keys()].sort((a,b)=>Number(rounds[0][a].bye)-Number(rounds[0][b].bye)): [...rounds[0].keys()];
+ for(const i of indices){positions.push([i,0]);if(!rounds[0][i].bye)positions.push([i,1]);}
+ ids.forEach((id,i)=>{const [match,side]=positions[i];rounds[0][match].teams[side]=id;});
+ const t={id:uid(),name,createdAt:new Date().toISOString(),teamCount,version:{...structuredClone(version),teams:structuredClone(version.teams.filter(t=>teamIds.includes(t.id))),players:structuredClone(version.players.filter(p=>teamIds.includes(p.teamId)))},teamIds:[...teamIds],rounds};
+ // Pin the original roster until every empty entry has been filled.
+ if(ids.length<teamCount)t.entryCatalog=structuredClone(version);
+ propagate(t);return t;
+}
+export function openTeamSlots(t){return t.rounds[0].flatMap((m,index)=>m.teams.flatMap((id,side)=>!id&&!(m.bye&&side===1)?[{index,side}]:[]));}
+export function addTeam(t,teamId,index,side){
+ const m=t.rounds[0][index];
+ if(!m||![0,1].includes(side)||m.teams[side]||m.bye&&side===1||m.result)throw Error('Deze plek kan niet meer worden ingevuld.');
+ if(t.teamIds.includes(teamId))throw Error('Dit team doet al mee.');
+ const catalog=t.entryCatalog,team=catalog?.teams.find(team=>team.id===teamId);
+ if(!team)throw Error('Dit team is niet beschikbaar in de vastgelegde selectie.');
+ m.teams[side]=teamId;t.teamIds.push(teamId);t.version.teams.push(structuredClone(team));t.version.players.push(...structuredClone(catalog.players.filter(p=>p.teamId===teamId)));
+ if(!openTeamSlots(t).length)delete t.entryCatalog;
+ propagate(t);
 }
 export function winner(m){if(m.bye)return m.teams[0];if(!m.result)return null;const r=m.result;return m.teams[r.score[0]===r.score[1]?(r.penalties[0]>r.penalties[1]?0:1):(r.score[0]>r.score[1]?0:1)];}
 export function propagate(t){for(let r=1;r<t.rounds.length;r++)t.rounds[r].forEach((m,i)=>{m.teams=[winner(t.rounds[r-1][i*2]),winner(t.rounds[r-1][i*2+1])];});}
