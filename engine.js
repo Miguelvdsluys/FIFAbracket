@@ -7,7 +7,7 @@ export function createTournament(name,version,teamIds,shuffle=false){
  for(let i=0;i<byes;i++)slots.push(ids.shift(),null);slots.push(...ids);
  const rounds=[];for(let count=size/2;count>=1;count/=2)rounds.push(Array.from({length:count},()=>({id:uid(),teams:[null,null],result:null})));
  rounds[0].forEach((m,i)=>{m.teams=slots.slice(i*2,i*2+2);m.bye=!m.teams[1];});
- const t={id:uid(),name,createdAt:new Date().toISOString(),version:structuredClone(version),teamIds:[...teamIds],rounds};propagate(t);return t;
+ const t={id:uid(),name,createdAt:new Date().toISOString(),version:{...structuredClone(version),teams:structuredClone(version.teams.filter(t=>teamIds.includes(t.id))),players:structuredClone(version.players.filter(p=>teamIds.includes(p.teamId)))},teamIds:[...teamIds],rounds};propagate(t);return t;
 }
 export function winner(m){if(m.bye)return m.teams[0];if(!m.result)return null;const r=m.result;return m.teams[r.score[0]===r.score[1]?(r.penalties[0]>r.penalties[1]?0:1):(r.score[0]>r.score[1]?0:1)];}
 export function propagate(t){for(let r=1;r<t.rounds.length;r++)t.rounds[r].forEach((m,i)=>{m.teams=[winner(t.rounds[r-1][i*2]),winner(t.rounds[r-1][i*2+1])];});}
