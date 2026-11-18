@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createTournament,saveResult,winner,matches,stats,validateVersion} from '../public/engine.js';
+const version=validateVersion({name:'TEST ONLY – fictieve fixtures',source:'Geautomatiseerde test',mode:'Test',date:'2026-11-18',teams:Array.from({length:6},(_,i)=>({id:'t'+i,name:'Testteam '+i})),players:Array.from({length:6},(_,i)=>({id:'p'+i,name:'Testspeler '+i,teamId:'t'+i}))});
+const result=(score,goals=[],penalties=null)=>({score,goals,penalties});
+test('zes teams: byes, penalties, onbekend, correctie, statistieken en snapshot',()=>{
+ const t=createTournament('Test',version,version.teams.map(t=>t.id));
+ assert.equal(t.rounds[0].filter(m=>m.bye).length,2);
+ assert.equal(matches([t]).length,0);
+ for(let i=2;i<4;i++)saveResult(t,0,i,result([1,0],[{side:0,kind:'unknown',count:1}]));
+ saveResult(t,1,0,result([2,2],[],[4,3]));
+ const m=t.rounds[1][1];const p=version.players.find(p=>p.teamId===m.teams[0]);
+ saveResult(t,1,1,result([2,0],[{side:0,kind:'player',playerId:p.id,count:2}]));
+ assert.equal(stats([t]).teams.reduce((a,x)=>a+x.finals,0),2);
+ saveResult(t,2,0,result([1,0]));assert.equal(stats([t]).teams.reduce((a,x)=>a+x.titles,0),1);
+ const outcome=saveResult(t,1,0,result([0,3]));assert.equal(outcome.needsConfirmation.length,1);assert.ok(t.rounds[2][0].result);
+ saveResult(t,1,0,result([0,3]),true);assert.equal(t.rounds[2][0].result,null);assert.equal(stats([t]).teams.reduce((a,x)=>a+x.titles,0),0);
+ saveResult(t,2,0,result([0,1]));const s=stats([t]);assert.equal(matches([t]).length,5);assert.equal(s.teams.reduce((a,x)=>a+x.played,0),10);assert.equal(s.teams.reduce((a,x)=>a+x.wins,0),5);assert.equal(s.players[0].goals,2);assert.equal(s.teams.reduce((a,x)=>a+x.gf,0),8);
+ assert.equal(winner(JSON.parse(JSON.stringify(t)).rounds[2][0]),winner(t.rounds[2][0]));
+ version.teams[0].name='Gewijzigd';assert.notEqual(t.version.teams[0].name,version.teams[0].name);
+});
+test('te veel goals en onbesliste strafschoppen worden geweigerd',()=>{const t=createTournament('T',version,['t0','t1']);assert.throws(()=>saveResult(t,0,0,result([1,0],[{side:0,kind:'unknown',count:2}])));assert.throws(()=>saveResult(t,0,0,result([0,0],[],[3,3])));});
+test('elk aantal teams van 2 tot 32 levert n-1 wedstrijden op',()=>{for(let n=2;n<=32;n++){const v={...version,teams:Array.from({length:n},(_,i)=>({id:''+i,name:'Test '+i}))};const t=createTournament('T',v,v.teams.map(x=>x.id));t.rounds.forEach((round,r)=>round.forEach((m,i)=>{if(!m.bye)saveResult(t,r,i,result([1,0]));}));assert.equal(matches([t]).length,n-1);assert.ok(winner(t.rounds.at(-1)[0]));}});

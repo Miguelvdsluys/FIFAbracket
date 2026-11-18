@@ -1,0 +1,52 @@
+# FIFA 22 Bracket Tracker
+
+Nederlandstalige knock-outtracker met een responsive dashboard, toernooien voor 2–32 teams, doelpuntenmakers, strafschoppen, correcties, ranglijsten en een wedstrijdarchief.
+
+## Starten
+
+Vereist Node.js 24 of nieuwer. Er zijn geen externe runtime-dependencies.
+
+```sh
+npm start
+```
+
+De server luistert op poort 3000, instelbaar via `PORT`. SQLite bewaart de gegevens in `data/tracker.sqlite`. Maak voor een consistente back-up gebruik van SQLite-backuptools of stop de server voordat je de volledige datamap kopieert. Met `DATA_DIR` kies je een andere datamap. De app is bedoeld voor een gedeelde, vertrouwde omgeving; voeg authenticatie toe voordat je hem publiek toegankelijk maakt.
+
+```sh
+npm test
+```
+
+De tests spelen een zes-teamstoernooi uit, testen vrijstellingen, strafschoppen, onbekende goals, een winnaarcorrectie met teruggezette finale, statistieken, alle teamgroottes en daadwerkelijke database-opslag na een serverherstart. Testgegevens worden uitsluitend in tijdelijke databases opgeslagen.
+
+## Teamcatalogus
+
+Er wordt bewust geen ongeverifieerde historische dataset meegeleverd. Open **Teamcatalogus beheren** en importeer JSON of voeg handmatige gegevens toe. De catalogus toont bron, spelmodus, selectiedatum, aantallen en ontbrekende spelersselecties. Handmatige teams en spelers zijn gemarkeerd. Importeer een nieuwe versie om ontbrekende spelers of teams aan te vullen; bestaande toernooien bewaren hun eigen volledige snapshot.
+
+JSON-structuur (de lege lijsten vul je met echte brongegevens):
+
+```json
+{
+  "name": "Naam van de FIFA 22-selectie-update",
+  "source": "Verifieerbare bron-URL of bronbeschrijving",
+  "mode": "FIFA 22 Kick-off",
+  "date": "2021-10-01",
+  "teams": [],
+  "players": []
+}
+```
+
+Een team heeft `id`, `name` en optioneel `league`, `country`, `type` (`club` of `nationaal`), `manual` (boolean). Een speler heeft `id`, `name`, `teamId` en optioneel `manual`. Gebruik stabiele string-ID's over versies heen. Dezelfde speler-ID kan bij meerdere teamkoppelingen voorkomen, maar iedere combinatie speler/team moet uniek zijn. De importer controleert teamverwijzingen en duplicaten. JSON-import betekent niet dat de bron automatisch als FIFA 22 is geverifieerd; controleer de bron zelf.
+
+## Werking
+
+Bij handmatige indeling is de selectievolgorde de plaatsing. De preview toont de exacte eerste ronde; vrijstellingen staan vooraan. Loten gebruikt een Fisher–Yates shuffle. Een vrijstelling telt niet als overwinning of wedstrijd. De eindstand bevat reguliere speeltijd én verlenging; de aparte strafschoppenserie bepaalt uitsluitend de winnaar. Niet toegewezen en onbekende goals tellen voor teams, eigen goals ook, maar alleen expliciet aan spelers toegewezen goals komen in de topscorerslijst.
+
+Een winnaarcorrectie toont gespeelde vervolguitslagen die na bevestiging worden verwijderd. Alle statistieken worden steeds opnieuw afgeleid, zonder opgeslagen tellers. Filters werken per toernooi en vanaf een datum voor bevestigde uitslagen; deelname en bereikte finaleplaatsen blijven context van de geselecteerde toernooien. Team-, speler- en duelprofielen openen onderliggende wedstrijden.
+
+De SQLite-opslag gebruikt revisiecontrole: een verouderde browser kan wijzigingen van een andere browser niet stil overschrijven. Er is geen account- of gebruikersbeheer. Verwijder een toernooi alleen via de expliciete bevestiging in de app.
+
+## Online via GitHub Pages
+
+De repository bevat `.github/workflows/pages.yml`. Kies op GitHub bij **Settings → Pages → Build and deployment → Source** de optie **GitHub Actions**. Een push op `main` of handmatige start van de workflow **Publiceer GitHub Pages** publiceert de app.
+
+`npm run build` maakt `dist/` met relatieve assetpaden, zodat de app ook onder `/FIFAbracket/` werkt. Deze versie bewaart de gegevens in **IndexedDB van je eigen browser**, niet in SQLite op een server. De site is publiek, maar je lokale toernooidata wordt niet naar GitHub verstuurd en niet tussen apparaten of vrienden gesynchroniseerd. Wissen van sitegegevens wist ook de lokale database. De bestaande Node-server blijft SQLite gebruiken.
