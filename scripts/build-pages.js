@@ -5,6 +5,8 @@ const icons=['icon-192.png','icon-512.png','icon-maskable.png','apple-touch-icon
 await mkdir('dist',{recursive:true});
 const hash=createHash('sha256');
 for(const file of ['index.html','sw.js',...files,'data/fifa22-sofifa-220002.json',...icons.map(icon=>'icons/'+icon)])hash.update(await readFile('public/'+file));
+const logoManifest=JSON.parse(await readFile('public/data/logo-sources.json','utf8'));
+for(const logo of logoManifest)hash.update(await readFile('public/data/team-logos/'+logo.file));
 const version=hash.digest('hex').slice(0,16);
 // Version every module import too: older installed workers must not intercept
 // unversioned dependencies and combine an old module with a new app shell.
@@ -15,7 +17,7 @@ for(const file of files){
 }
 await cp('public/icons','dist/icons',{recursive:true});
 await cp('public/data','dist/data',{recursive:true});
-await writeFile('dist/sw.js',(await readFile('public/sw.js','utf8')).replaceAll('__VERSION__',version));
+await writeFile('dist/sw.js',(await readFile('public/sw.js','utf8')).replaceAll('__VERSION__',version).replace("'__LOGO_FILES__'",JSON.stringify(logoManifest.map(logo=>'./data/team-logos/'+logo.file))));
 let html=(await readFile('public/index.html','utf8')).replace('<html lang="nl">','<html lang="nl" data-storage="browser">').replace('href="/style.css"','href="./style.css"').replace('src="/app.js"','src="./app.js"');
 html=html.replace(/(src|href)="(\.\/[^"?]+\.(?:js|css))"/g,`$1="$2?v=${version}"`);
 await writeFile('dist/index.html',html);await writeFile('dist/.nojekyll','');

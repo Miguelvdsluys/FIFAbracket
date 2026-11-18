@@ -22,3 +22,13 @@ export function bracketLayout(t){
  });
  return {width,height,cardWidth,cardHeight,nodes,edges,headers};
 }
+
+export function linearBracketLayout(t){
+ const cardWidth=244,cardHeight=126,gap=100,top=80;
+ const height=Math.max(400,t.rounds[0].length*180+100);
+ const width=32+t.rounds.length*cardWidth+(t.rounds.length-1)*gap;
+ const nodes=[],headers=[];
+ t.rounds.forEach((round,r)=>{const x=16+r*(cardWidth+gap);headers.push({round:r,side:'left',x});round.forEach((m,i)=>nodes.push({round:r,index:i,side:r===t.rounds.length-1?'final':'left',x,y:top+(i+.5)*(height-100)/round.length-cardHeight/2}));});
+ const edges=nodes.filter(n=>n.round<t.rounds.length-1).map(n=>{const target=nodes.find(next=>next.round===n.round+1&&next.index===Math.floor(n.index/2));const x1=n.x+cardWidth,x2=target.x,y1=n.y+cardHeight/2,y2=target.y+cardHeight/2;return {from:[n.round,n.index],to:[target.round,target.index],path:`M ${x1} ${y1} H ${(x1+x2)/2} V ${y2} H ${x2}`};});
+ return {width,height,cardWidth,cardHeight,nodes,edges,headers};
+}

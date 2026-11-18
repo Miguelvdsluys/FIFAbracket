@@ -76,3 +76,11 @@ Een geopend toernooi gebruikt standaard het hele beschikbare scherm, met grotere
 ## Club- en landenlogo's
 
 Alle 734 teams hebben `logoUrl` en `flagUrl` uit de oorspronkelijke CSV (`club_logo_url` / `nation_logo_url`). De app toont deze bronafbeeldingen in teamkeuzes, brackets, wedstrijdformulieren en ranglijsten. Afbeeldingen worden door `cdn.sofifa.net` geleverd; de bron kan bereikbaarheid en vormgeving wijzigen. Bij een mislukte download volgt de bronvlag en daarna de initialen. De serviceworker bewaart bekeken afbeeldingen apart voor offline gebruik en raakt daarbij de toernooidatabase niet aan. Bij de allereerste offline weergave van een nog niet bekeken logo blijven de initialen beschikbaar.
+
+## Mobiele schermweergave en lokale badges
+
+Een toernooi opent met alleen een compacte bovenbalk en een bracket dat het resterende scherm vult. In deze weergave lopen de rondes van links naar rechts, zoals in een toernooi-editor. De grote wedstrijdregels zijn aanklikbaar; je verschuift het schema horizontaal en verticaal. Het oog toont het hele schema, het menu rechtsboven bevat zoom- en weergaveopties. In het normale venster blijft de eerdere gespiegelde opbouw beschikbaar.
+
+Teamkeuze gebruikt een schermvullend formulier: zoeken en filters bovenaan, een grote scrollbare lijst in het midden en de volgende stap onderaan. Na kiezen wordt de zoekopdracht geleegd voor het volgende team.
+
+Er worden nu **453 lokale afbeeldingen** meegeleverd: **420 clublogo's en vlaggen voor alle 33 nationale ploegen**. `public/data/logo-sources.json` legt de koppelingen en bronnen vast. Deze bestanden worden gepubliceerd en offline gecachet; ze zijn niet afhankelijk van de eerder onbereikbare SoFIFA-CDN. Bronnen: FCLOGO/fclogo.top, luukhopman/football-logos, qiulot/clublogos en lipis/flag-icons. De beschikbare licentieteksten zijn meegeleverd. Voor de resterende 281 clubs bestaat nog geen gecontroleerde lokale koppeling; daarvoor wordt de oorspronkelijke bron geprobeerd en blijven initialen de terugval. De selectiegegevens en spelers-ID's zijn niet veranderd.
