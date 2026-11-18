@@ -18,15 +18,46 @@ export function createTournament(name,version,teamIds,shuffle=false,teamCount=te
  propagate(t);return t;
 }
 export function openTeamSlots(t){return t.rounds[0].flatMap((m,index)=>m.teams.flatMap((id,side)=>!id&&!(m.bye&&side===1)?[{index,side}]:[]));}
-export function addTeam(t,teamId,index,side){
+export function addTeam(t,teamId,index,side,extraCatalog=null){
  const m=t.rounds[0][index];
  if(!m||![0,1].includes(side)||m.teams[side]||m.bye&&side===1||m.result)throw Error('Deze plek kan niet meer worden ingevuld.');
  if(t.teamIds.includes(teamId))throw Error('Dit team doet al mee.');
- const catalog=t.entryCatalog,team=catalog?.teams.find(team=>team.id===teamId);
+ const base=t.entryCatalog;const manual=extraCatalog?.id===t.version.id&&extraCatalog.teams.find(team=>team.id===teamId&&team.manual&&team.type==='special');const catalog=base?.teams.some(team=>team.id===teamId)?base:manual?extraCatalog:base,team=catalog?.teams.find(team=>team.id===teamId);
  if(!team)throw Error('Dit team is niet beschikbaar in de vastgelegde selectie.');
  m.teams[side]=teamId;t.teamIds.push(teamId);t.version.teams.push(structuredClone(team));t.version.players.push(...structuredClone(catalog.players.filter(p=>p.teamId===teamId)));
  if(!openTeamSlots(t).length)delete t.entryCatalog;
  propagate(t);
+}
+export function editTeam(t,index,side,target,catalog,confirm=false){
+ const from=t.rounds[0][index];
+ if(!from||![0,1].includes(side)||from.bye&&side===1||!from.teams[side])throw Error('Kies een ingevulde teamplek.');
+ const oldId=from.teams[side];let destination=null,newTeam=null;
+ if(typeof target==='string'){
+  if(target===oldId)return {saved:true};
+  t.rounds[0].forEach((m,i)=>m.teams.forEach((id,s)=>{if(id===target)destination={index:i,side:s};}));
+  if(!destination){
+   const source=t.entryCatalog?.teams.some(team=>team.id===target)?t.entryCatalog:catalog;
+   if(source?.id!==t.version.id)throw Error('De oorspronkelijke selectieversie is niet beschikbaar.');
+   newTeam=source.teams.find(team=>team.id===target);if(!newTeam)throw Error('Onbekend team in deze selectieversie.');
+   catalog=source;
+  }
+ }else {
+  destination=target;const m=t.rounds[0][target?.index];
+  if(!m||![0,1].includes(target.side)||m.bye&&target.side===1)throw Error('Kies een geldige andere plek.');
+  if(destination.index===index&&destination.side===side)return {saved:true};
+ }
+ const paths=new Set();
+ for(let i of [index,...(destination?[destination.index]:[])])for(let r=0;r<t.rounds.length;r++){paths.add(r+':'+i);i=Math.floor(i/2);}
+ const impacted=[...paths].map(key=>{const [round,match]=key.split(':').map(Number);return {round,index:match,match:t.rounds[round][match]};}).filter(x=>x.match.result);
+ if(impacted.length&&!confirm)return {needsConfirmation:impacted};
+ for(const key of paths){const [r,i]=key.split(':').map(Number);t.rounds[r][i].result=null;}
+ if(destination){const m=t.rounds[0][destination.index],other=m.teams[destination.side];m.teams[destination.side]=oldId;from.teams[side]=other;}
+ else {
+  from.teams[side]=newTeam.id;t.teamIds=t.teamIds.map(id=>id===oldId?newTeam.id:id);
+  t.version.teams=t.version.teams.filter(team=>team.id!==oldId);t.version.teams.push(structuredClone(newTeam));
+  t.version.players=t.version.players.filter(player=>player.teamId!==oldId);t.version.players.push(...structuredClone(catalog.players.filter(player=>player.teamId===newTeam.id)));
+ }
+ propagate(t);return {saved:true};
 }
 export function winner(m){if(m.bye)return m.teams[0];if(!m.result)return null;const r=m.result;return m.teams[r.score[0]===r.score[1]?(r.penalties[0]>r.penalties[1]?0:1):(r.score[0]>r.score[1]?0:1)];}
 export function propagate(t){for(let r=1;r<t.rounds.length;r++)t.rounds[r].forEach((m,i)=>{m.teams=[winner(t.rounds[r-1][i*2]),winner(t.rounds[r-1][i*2+1])];});}
