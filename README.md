@@ -98,3 +98,13 @@ Een nieuw wedstrijdformulier toont de strafschoppenvelden niet. Open ze met **�
 De door de gebruiker genoemde teams zijn als **speciale, handmatig aangemelde teams** toegevoegd. Ze zijn op naam en via **Speciale teams** vindbaar, inclusief de zoekvariant ‘adidas all stars’. Hun historische FIFA 22-selecties zijn **niet geverifieerd**: de netwerkproxy blokkeert FIFA Index, SoFIFA, FIFA CM en EA met CONNECT 403. Zoekpogingen via beschikbare GitHub-bronnen leverden geen betrouwbare speciale FIFA 22-rosters op. Er zijn daarom geen legenden of spelerskoppelingen verzonnen. Doelpunten kunnen voorlopig als onbekend worden geregistreerd.
 
 Er is een aanvullende netwerkallowlist opgeslagen in het omgevingsconcept voor `www.fifaindex.com`, `fifaindex.com`, `sofifa.com`, `www.fifacm.com` en `www.ea.com`. Dit concept is niet vanzelf actief; na activeren kan bronverificatie worden hervat. De bestaande clubs, nationale selecties, spelers-ID's en eerdere toernooisnapshots zijn behouden.
+
+## Teams rechtstreeks verslepen
+
+Houd een ingevulde teamrij ongeveer 0,4 seconde ingedrukt en sleep die naar een ander team of een lege plek in de eerste ronde. De mogelijke bestemming licht groen op. Loslaten wisselt de twee deelnemers of verplaatst een deelnemer naar de lege plek. Ook een doorgestroomd team verwijst naar zijn oorspronkelijke teamplek; er worden geen teams los in een latere ronde ingevoegd.
+
+Een snelle veeg over een teamrij verschuift het schema. Tijdens het slepen wordt bij de randen automatisch doorgescrold. Annuleren, de app verlaten en Escape ruimen de sleepmodus op. Na een sleepgebaar opent niet per ongeluk het scoreformulier. Voor toetsenbordgebruik blijft **Teams wisselen** in het menu beschikbaar. Geraakte bevestigde uitslagen worden, net als bij de teamkiezer, eerst getoond en pas na bevestiging teruggezet.
+
+Browserregressie uitgevoerd met native Chromium touch-events: wisselen, direct daarna tikken, snel swipen, verplaatsen naar leeg vak, bevestiging annuleren/accepteren, randscrollen, touch-cancel en behouden na herladen. Het nieuwe modulebestand wordt ook in de offline build meegenomen.
+
+De speciale teams zijn opnieuw onderzocht op 18 november 2026. De actieve omgeving staat de bronwebsites nog niet toe (CONNECT 403, runtimebeleid zonder de opgeslagen domeinuitbreiding). Beschikbare openbare GitHub-datasets bevestigen geen exacte FIFA 22-rosters of badges voor Soccer Aid en adidas All-Star. De onbevestigde status blijft daarom behouden; er zijn geen spelers of vermeende officiële logo's verzonnen.

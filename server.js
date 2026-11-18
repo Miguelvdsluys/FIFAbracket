@@ -27,7 +27,7 @@ const server=http.createServer(async(req,res)=>{
   }
   const path=req.url.split('?')[0];const file=path==='/'?'index.html':path.slice(1);
   const localLogo=/^data\/team-logos\/[0-9]+\.(svg|png)$/.test(file);
-  if(!localLogo&&!['index.html','app.js','bracket.js','catalog.js','data/fifa22-sofifa-220002.json','engine.js','storage.js','style.css','pwa.js','sw.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable.png','icons/apple-touch-icon.png'].includes(file)){res.writeHead(404);return res.end('Niet gevonden');}
+  if(!localLogo&&!['index.html','app.js','team-drag.js','bracket.js','catalog.js','data/fifa22-sofifa-220002.json','engine.js','storage.js','style.css','pwa.js','sw.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable.png','icons/apple-touch-icon.png'].includes(file)){res.writeHead(404);return res.end('Niet gevonden');}
   res.setHeader('Content-Type',file.endsWith('.svg')?'image/svg+xml':file.endsWith('.json')?'application/json':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.webmanifest')?'application/manifest+json':file.endsWith('.png')?'image/png':'text/html');res.end(readFileSync(resolve(root,'public',file)));
  }catch(e){res.writeHead(400,{'Content-Type':'application/json'});res.end(JSON.stringify({error:e.message}));}
 });

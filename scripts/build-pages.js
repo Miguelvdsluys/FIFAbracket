@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto';
 import {mkdir,readFile,writeFile,cp} from 'node:fs/promises';
-const files=['app.js','bracket.js','engine.js','storage.js','style.css','pwa.js','manifest.webmanifest','catalog.js'];
+const files=['app.js','team-drag.js','bracket.js','engine.js','storage.js','style.css','pwa.js','manifest.webmanifest','catalog.js'];
 const icons=['icon-192.png','icon-512.png','icon-maskable.png','apple-touch-icon.png'];
 await mkdir('dist',{recursive:true});
 const hash=createHash('sha256');
