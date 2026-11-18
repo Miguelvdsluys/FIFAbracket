@@ -18,24 +18,15 @@ npm test
 
 De tests spelen een zes-teamstoernooi uit, testen vrijstellingen, strafschoppen, onbekende goals, een winnaarcorrectie met teruggezette finale, statistieken, alle teamgroottes en daadwerkelijke database-opslag na een serverherstart. Testgegevens worden uitsluitend in tijdelijke databases opgeslagen.
 
-## Teamcatalogus
+## Standaard FIFA 22-catalogus
 
-Er wordt bewust geen ongeverifieerde historische dataset meegeleverd. Open **Teamcatalogus beheren** en importeer JSON of voeg handmatige gegevens toe. De catalogus toont bron, spelmodus, selectiedatum, aantallen en ontbrekende spelersselecties. Handmatige teams en spelers zijn gemarkeerd. Importeer een nieuwe versie om ontbrekende spelers of teams aan te vullen; bestaande toernooien bewaren hun eigen volledige snapshot.
+Iedere bezoeker krijgt automatisch de meegeleverde FIFA 22-catalogus: 701 clubs, 33 nationale ploegen en 19.239 unieke spelers (19.937 selectiekoppelingen). De brondata staat in `public/data/fifa22-sofifa-220002.json` en wordt ook door de serviceworker gecachet. Niemand hoeft een bestand te downloaden of te importeren. De openbare interface bevat geen uploadvelden.
 
-JSON-structuur (de lege lijsten vul je met echte brongegevens):
+Nieuwe toernooien gebruiken een eenvoudige wizard: naam → aantal teams → teams kiezen → schema bekijken. Broninformatie staat apart onder **Teams → Over deze selectie**.
 
-```json
-{
-  "name": "Naam van de FIFA 22-selectie-update",
-  "source": "Verifieerbare bron-URL of bronbeschrijving",
-  "mode": "FIFA 22 Kick-off",
-  "date": "2021-10-01",
-  "teams": [],
-  "players": []
-}
-```
+De vaste catalogus gebruikt een stabiele versie-ID. Bestaande imports blijven in de opslag staan; eerdere toernooien en hun snapshots worden niet gewijzigd. Voor nieuwe toernooien worden alleen de gekozen teams en hun spelers in een onafhankelijke snapshot opgeslagen. Zo blijven resultaten correct na toekomstige catalogusupdates en groeit de database niet onnodig met de volledige catalogus per toernooi.
 
-Een team heeft `id`, `name` en optioneel `league`, `country`, `type` (`club` of `nationaal`), `manual` (boolean). Een speler heeft `id`, `name`, `teamId` en optioneel `manual`. Gebruik stabiele string-ID's over versies heen. Dezelfde speler-ID kan bij meerdere teamkoppelingen voorkomen, maar iedere combinatie speler/team moet uniek zijn. De importer controleert teamverwijzingen en duplicaten. JSON-import betekent niet dat de bron automatisch als FIFA 22 is geverifieerd; controleer de bron zelf.
+Bron: [Pearlkhanna/fifa22-dataset](https://github.com/Pearlkhanna/fifa22-dataset), commit `009e95816328554c38b25b998d138f1ed7df441d`, een SoFIFA-afgeleide FIFA 22-spelersdataset. Alle oorspronkelijke speler-URL's verwijzen naar versie `220002`. De exacte selectiedatum en complete dekking van alle speelbare Kick-off-teams zijn niet bevestigd; vrouwenploegen ontbreken. Nationale ploegen zijn uitsluitend gebaseerd op expliciete `nation_team_id`-koppelingen, nooit alleen op de nationaliteit van spelers. De licentietekst van de bronrepository staat in `public/data/SOURCE-LICENSE.txt`; aanvullende provenance staat in de dataset zelf.
 
 ## Werking
 
