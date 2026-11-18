@@ -1,7 +1,7 @@
-import {bracketLayout} from './bracket.js';
-import {loadBuiltInCatalog,withDefaultCatalog} from './catalog.js';
-import {loadState,saveState} from './storage.js';
-import {createTournament,winner,saveResult,matches,stats} from './engine.js';
+import {bracketLayout} from './bracket.js?v=78d7a0c2c206a7f6';
+import {loadBuiltInCatalog,withDefaultCatalog} from './catalog.js?v=78d7a0c2c206a7f6';
+import {loadState,saveState} from './storage.js?v=78d7a0c2c206a7f6';
+import {createTournament,winner,saveResult,matches,stats} from './engine.js?v=78d7a0c2c206a7f6';
 let state=await loadState(),page='dashboard',selected=null,filterTournament='',filterDate='',sort='titles';
 let defaultCatalog;
 try{defaultCatalog=await loadBuiltInCatalog(state);state=withDefaultCatalog(state,defaultCatalog);}catch(error){document.querySelector('#app').innerHTML='<div class="empty"><h2>Teams laden lukt nog niet</h2><p>Controleer je verbinding en open de app opnieuw.</p><button onclick="location.reload()">Opnieuw proberen</button></div>';throw error;}
