@@ -1,7 +1,12 @@
-import {mkdir,copyFile,readFile,writeFile} from 'node:fs/promises';
-const files=['app.js','engine.js','storage.js','style.css'];
+import {createHash} from 'node:crypto';
+import {mkdir,copyFile,readFile,writeFile,cp} from 'node:fs/promises';
+const files=['app.js','engine.js','storage.js','style.css','pwa.js','manifest.webmanifest'];
 await mkdir('dist',{recursive:true});
 for(const file of files)await copyFile('public/'+file,'dist/'+file);
+await cp('public/icons','dist/icons',{recursive:true});
+const hash=createHash('sha256');hash.update(await readFile('public/index.html'));hash.update(await readFile('public/sw.js'));for(const icon of ['icon-192.png','icon-512.png','icon-maskable.png','apple-touch-icon.png'])hash.update(await readFile('public/icons/'+icon));for(const file of files)hash.update(await readFile('public/'+file));
+const worker=(await readFile('public/sw.js','utf8')).replace('__VERSION__',hash.digest('hex').slice(0,16));
+await writeFile('dist/sw.js',worker);
 const html=(await readFile('public/index.html','utf8')).replace('<html lang="nl">','<html lang="nl" data-storage="browser">').replace('href="/style.css"','href="./style.css"').replace('src="/app.js"','src="./app.js"');
 await writeFile('dist/index.html',html);await writeFile('dist/.nojekyll','');
 console.log('GitHub Pages-versie gebouwd in dist/');

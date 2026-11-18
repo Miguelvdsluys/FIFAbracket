@@ -50,3 +50,16 @@ De SQLite-opslag gebruikt revisiecontrole: een verouderde browser kan wijziginge
 De repository bevat `.github/workflows/pages.yml`. Kies op GitHub bij **Settings → Pages → Build and deployment → Source** de optie **GitHub Actions**. Een push op `main` of handmatige start van de workflow **Publiceer GitHub Pages** publiceert de app.
 
 `npm run build` maakt `dist/` met relatieve assetpaden, zodat de app ook onder `/FIFAbracket/` werkt. Deze versie bewaart de gegevens in **IndexedDB van je eigen browser**, niet in SQLite op een server. De site is publiek, maar je lokale toernooidata wordt niet naar GitHub verstuurd en niet tussen apparaten of vrienden gesynchroniseerd. Wissen van sitegegevens wist ook de lokale database. De bestaande Node-server blijft SQLite gebruiken.
+
+## Mobiele app installeren
+
+De GitHub Pages-versie is een Progressive Web App (PWA). Er is geen App Store-download nodig.
+
+- **Android (Chrome):** open de website, tik op **App installeren** en bevestig. Als de browser geen installatievenster aanbiedt, toont de knop de instructies voor het browsermenu.
+- **iPhone/iPad (Safari):** kies **Deel → Zet op beginscherm** / **Voeg toe aan beginscherm**. Kies ‘Open als webapp’ als Safari die optie toont.
+
+Open de app eerst volledig met internet. Zodra onderaan **Beschikbaar offline** verschijnt, zijn de appbestanden gecachet. De GitHub-versie kan daarna zonder internet toernooien aanmaken, uitslagen invoeren en ranglijsten bekijken. Dezelfde IndexedDB-database blijft bij herladen behouden. Een andere browser of een geïnstalleerde app kan een eigen opslagcontext gebruiken. Installeer daarom bij voorkeur voordat je je toernooien invoert.
+
+De serviceworker blijft binnen het pad van deze app, cachet alleen appbestanden en verwijdert geen toernooidata. Nieuwe builds krijgen automatisch een nieuwe cacheversie. Sluit alle geopende appvensters en tabbladen en open de app opnieuw om een gereedstaande update te activeren. De Node/SQLite-versie heeft geen offline serviceworker, omdat die de server nodig heeft voor opslag.
+
+De mobiele interface heeft een vaste navigatiebalk, knoppen van minimaal 44 pixels, numerieke toetsenborden voor scores, een rondekiezer en schermvullende formulieren. Grote ranglijsten kunnen binnen hun eigen tabel horizontaal worden gescrold.
