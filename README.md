@@ -51,7 +51,7 @@ De GitHub Pages-versie is een Progressive Web App (PWA). Er is geen App Store-do
 
 Open de app eerst volledig met internet. Zodra onderaan **Beschikbaar offline** verschijnt, zijn de appbestanden gecachet. De GitHub-versie kan daarna zonder internet toernooien aanmaken, uitslagen invoeren en ranglijsten bekijken. Dezelfde IndexedDB-database blijft bij herladen behouden. Een andere browser of een geïnstalleerde app kan een eigen opslagcontext gebruiken. Installeer daarom bij voorkeur voordat je je toernooien invoert.
 
-De serviceworker blijft binnen het pad van deze app, cachet alleen appbestanden en verwijdert geen toernooidata. Nieuwe builds krijgen automatisch een nieuwe cacheversie. Sluit alle geopende appvensters en tabbladen en open de app opnieuw om een gereedstaande update te activeren. De Node/SQLite-versie heeft geen offline serviceworker, omdat die de server nodig heeft voor opslag.
+De serviceworker blijft binnen het pad van deze app, cachet alleen appbestanden en verwijdert geen toernooidata. Nieuwe builds krijgen een eigen cacheversie én versienummers op scripts, stylesheets en module-imports. Dit voorkomt dat een oude geïnstalleerde app nieuwe en oude bestanden mengt. De app controleert updates bij openen, terugkeren naar de app en opnieuw verbinden. Tik op **Bijwerken** om zelf te controleren. Een gereedstaande update toont **Nu bijwerken**; het scherm wordt pas na jouw actie herladen. Open formulieren worden niet automatisch gesloten en de IndexedDB-opslag wordt niet gewist. De Node/SQLite-versie heeft geen offline serviceworker, omdat die de server nodig heeft voor opslag.
 
 De mobiele interface heeft een vaste navigatiebalk, knoppen van minimaal 44 pixels, numerieke toetsenborden voor scores, een rondekiezer en schermvullende formulieren. Grote ranglijsten kunnen binnen hun eigen tabel horizontaal worden gescrold.
 
@@ -60,3 +60,7 @@ De mobiele interface heeft een vaste navigatiebalk, knoppen van minimaal 44 pixe
 Een toernooi opent standaard als gespiegelde toernooiboom: de eerste wedstrijden staan links en rechts, vervolgrondes lopen naar het midden en de finale staat centraal. Verbindingslijnen volgen de oorspronkelijke wedstrijdindices. Winnaars en vrijstellingen komen daardoor op dezelfde plek terecht als in de bestaande rondeweergave.
 
 Alle wedstrijdkaarten zijn klikbaar, ook eerder bevestigde uitslagen. **Alles in beeld** past het hele schema in de beschikbare breedte; **＋ / −** vergroten of verkleinen het overzicht. Op mobiel kun je het schema in beide richtingen verschuiven of **Per ronde** kiezen voor grote invoerkaarten. De layout ondersteunt 2–32 teams, inclusief vrijstellingen. Node-tests controleren iedere kaart en verbinding; de browsercontrole test 16 teams, correcties, mobiel zoomen/scrollen en offline herladen.
+
+## Herstel van een oude geïnstalleerde versie
+
+Open de website eenmalig met `?update=nieuw` en start de app opnieuw. De nieuwe serviceworker neemt over zonder herinstallatie. De gewone webpagina, de geïnstalleerde app en offline gebruik krijgen dezelfde releasebestanden. Alleen appcaches worden vervangen; toernooien blijven in hun bestaande IndexedDB-opslag. Verwijder geen sitegegevens om een update te forceren.

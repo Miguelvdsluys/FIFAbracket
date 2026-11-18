@@ -1,13 +1,22 @@
 import {createHash} from 'node:crypto';
-import {mkdir,copyFile,readFile,writeFile,cp} from 'node:fs/promises';
+import {mkdir,readFile,writeFile,cp} from 'node:fs/promises';
 const files=['app.js','bracket.js','engine.js','storage.js','style.css','pwa.js','manifest.webmanifest','catalog.js'];
+const icons=['icon-192.png','icon-512.png','icon-maskable.png','apple-touch-icon.png'];
 await mkdir('dist',{recursive:true});
-for(const file of files)await copyFile('public/'+file,'dist/'+file);
-await cp('public/data','dist/data',{recursive:true});
+const hash=createHash('sha256');
+for(const file of ['index.html','sw.js',...files,'data/fifa22-sofifa-220002.json',...icons.map(icon=>'icons/'+icon)])hash.update(await readFile('public/'+file));
+const version=hash.digest('hex').slice(0,16);
+// Version every module import too: older installed workers must not intercept
+// unversioned dependencies and combine an old module with a new app shell.
+for(const file of files){
+ let body=await readFile('public/'+file,'utf8');
+ if(file.endsWith('.js'))body=body.replace(/(['"])(\.\/[^'"?]+\.js)\1/g,(_,quote,path)=>`${quote}${path}?v=${version}${quote}`);
+ await writeFile('dist/'+file,body);
+}
 await cp('public/icons','dist/icons',{recursive:true});
-const hash=createHash('sha256');hash.update(await readFile('public/data/fifa22-sofifa-220002.json'));hash.update(await readFile('public/index.html'));hash.update(await readFile('public/sw.js'));for(const icon of ['icon-192.png','icon-512.png','icon-maskable.png','apple-touch-icon.png'])hash.update(await readFile('public/icons/'+icon));for(const file of files)hash.update(await readFile('public/'+file));
-const worker=(await readFile('public/sw.js','utf8')).replace('__VERSION__',hash.digest('hex').slice(0,16));
-await writeFile('dist/sw.js',worker);
-const html=(await readFile('public/index.html','utf8')).replace('<html lang="nl">','<html lang="nl" data-storage="browser">').replace('href="/style.css"','href="./style.css"').replace('src="/app.js"','src="./app.js"');
+await cp('public/data','dist/data',{recursive:true});
+await writeFile('dist/sw.js',(await readFile('public/sw.js','utf8')).replaceAll('__VERSION__',version));
+let html=(await readFile('public/index.html','utf8')).replace('<html lang="nl">','<html lang="nl" data-storage="browser">').replace('href="/style.css"','href="./style.css"').replace('src="/app.js"','src="./app.js"');
+html=html.replace(/(src|href)="(\.\/[^"?]+\.(?:js|css))"/g,`$1="$2?v=${version}"`);
 await writeFile('dist/index.html',html);await writeFile('dist/.nojekyll','');
-console.log('GitHub Pages-versie gebouwd in dist/');
+console.log('GitHub Pages-versie gebouwd in dist/ · '+version);
