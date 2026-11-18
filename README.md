@@ -20,7 +20,7 @@ De tests spelen een zes-teamstoernooi uit, testen vrijstellingen, strafschoppen,
 
 ## Standaard FIFA 22-catalogus
 
-Iedere bezoeker krijgt automatisch de meegeleverde FIFA 22-catalogus: 701 clubs, 33 nationale ploegen en 19.239 unieke spelers (19.937 selectiekoppelingen). De brondata staat in `public/data/fifa22-sofifa-220002.json` en wordt ook door de serviceworker gecachet. Niemand hoeft een bestand te downloaden of te importeren. De openbare interface bevat geen uploadvelden.
+Iedere bezoeker krijgt automatisch de meegeleverde catalogus: 701 clubs, 33 nationale ploegen en 2 speciale teams. De basisbron bevat 19.239 unieke spelers; met de aangeleverde legenden zijn er 19.280 unieke spelers en 20.001 selectiekoppelingen. De brondata staat in `public/data/fifa22-sofifa-220002.json` en wordt ook door de serviceworker gecachet. Niemand hoeft een bestand te downloaden of te importeren. De openbare interface bevat geen uploadvelden.
 
 Nieuwe toernooien gebruiken een eenvoudige wizard: naam → aantal teams → teams kiezen → schema bekijken. Broninformatie staat apart onder **Teams → Over deze selectie**.
 
@@ -83,7 +83,7 @@ Een toernooi opent met alleen een compacte bovenbalk en een bracket dat het rest
 
 Teamkeuze gebruikt een schermvullend formulier: zoeken en filters bovenaan, een grote scrollbare lijst in het midden en de volgende stap onderaan. Na kiezen wordt de zoekopdracht geleegd voor het volgende team.
 
-Er worden nu **453 lokale afbeeldingen** meegeleverd: **420 clublogo's en vlaggen voor alle 33 nationale ploegen**. `public/data/logo-sources.json` legt de koppelingen en bronnen vast. Deze bestanden worden gepubliceerd en offline gecachet; ze zijn niet afhankelijk van de eerder onbereikbare SoFIFA-CDN. Bronnen: FCLOGO/fclogo.top, luukhopman/football-logos, qiulot/clublogos en lipis/flag-icons. De beschikbare licentieteksten zijn meegeleverd. Voor de resterende 281 clubs bestaat nog geen gecontroleerde lokale koppeling; daarvoor wordt de oorspronkelijke bron geprobeerd en blijven initialen de terugval. De selectiegegevens en spelers-ID's zijn niet veranderd.
+Er worden nu **455 lokale afbeeldingen** meegeleverd: **420 clublogo's, vlaggen voor alle 33 nationale ploegen en badges voor de 2 speciale teams**. `public/data/logo-sources.json` legt de koppelingen en bronnen vast. Deze bestanden worden gepubliceerd en offline gecachet; ze zijn niet afhankelijk van de eerder onbereikbare SoFIFA-CDN. Bronnen: FCLOGO/fclogo.top, luukhopman/football-logos, qiulot/clublogos en lipis/flag-icons. De beschikbare licentieteksten zijn meegeleverd. Voor de resterende 281 clubs bestaat nog geen gecontroleerde lokale koppeling; daarvoor wordt de oorspronkelijke bron geprobeerd en blijven initialen de terugval. De selectiegegevens en spelers-ID's zijn niet veranderd.
 
 ## Teams wisselen, verwijderen en strafschoppen
 
@@ -95,9 +95,13 @@ Een nieuw wedstrijdformulier toont de strafschoppenvelden niet. Open ze met **�
 
 ## Soccer Aid en adidas All-Star
 
-De door de gebruiker genoemde teams zijn als **speciale, handmatig aangemelde teams** toegevoegd. Ze zijn op naam en via **Speciale teams** vindbaar, inclusief de zoekvariant ‘adidas all stars’. Hun historische FIFA 22-selecties zijn **niet geverifieerd**: de netwerkproxy blokkeert FIFA Index, SoFIFA, FIFA CM en EA met CONNECT 403. Zoekpogingen via beschikbare GitHub-bronnen leverden geen betrouwbare speciale FIFA 22-rosters op. Er zijn daarom geen legenden of spelerskoppelingen verzonnen. Doelpunten kunnen voorlopig als onbekend worden geregistreerd.
+De selecties zijn overgenomen uit de vijf door de gebruiker aangeleverde screenshots: **41 spelers voor Soccer Aid** (de eerste drie afbeeldingen met de blauwe badge) en **23 spelers voor adidas All-Star** (de laatste twee afbeeldingen). Ze staan in `public/data/special-teams/rosters.json`, met bronsoort `user-supplied-screenshots`. De exacte selectie-update is niet zichtbaar; dit is geen claim van onafhankelijke verificatie tegen EA's database.
 
-Er is een aanvullende netwerkallowlist opgeslagen in het omgevingsconcept voor `www.fifaindex.com`, `fifaindex.com`, `sofifa.com`, `www.fifacm.com` en `www.ea.com`. Dit concept is niet vanzelf actief; na activeren kan bronverificatie worden hervat. De bestaande clubs, nationale selecties, spelers-ID's en eerdere toernooisnapshots zijn behouden.
+Roy Keane en Robbie Keane hebben aparte stabiele IDs. De adidas-spelers gebruiken hun bestaande SoFIFA-speler-ID's; zo telt Messi bij PSG en adidas samen op één topscorerslijst. De basisbron blijft 19.239 spelers bevatten. Met 41 extra legenden bevat de catalogus 19.280 unieke spelers en 20.001 team-spelerkoppelingen. Posities en namen volgen de aangeleverde lijsten; er zijn geen niet-afgebeelde spelers toegevoegd.
+
+Eerdere lege, onbevestigde speciale selecties worden aangevuld bij het openen van de app, zonder scores, data of bestaande onbekende doelpunten te veranderen. Zelf ingevulde niet-lege spelerslijsten worden behouden. Ook oude gedeeltelijk gevulde toernooien kunnen deze speciale teams later met hun volledige selectie toevoegen.
+
+De blauwe Soccer Aid-badge is een visuele reproductie op basis van het screenshot; de originele generatoruitvoer blijft apart bewaard. Het adidas-merklogo komt uit Simple Icons 5.21.1. Dit merkbeeld is niet apart geverifieerd als een officieel EA-teamembleem. Beide afbeeldingen worden lokaal meegeleverd en offline gecachet.
 
 ## Teams rechtstreeks verslepen
 
@@ -106,5 +110,3 @@ Houd een ingevulde teamrij ongeveer 0,4 seconde ingedrukt en sleep die naar een 
 Een snelle veeg over een teamrij verschuift het schema. Tijdens het slepen wordt bij de randen automatisch doorgescrold. Annuleren, de app verlaten en Escape ruimen de sleepmodus op. Na een sleepgebaar opent niet per ongeluk het scoreformulier. Voor toetsenbordgebruik blijft **Teams wisselen** in het menu beschikbaar. Geraakte bevestigde uitslagen worden, net als bij de teamkiezer, eerst getoond en pas na bevestiging teruggezet.
 
 Browserregressie uitgevoerd met native Chromium touch-events: wisselen, direct daarna tikken, snel swipen, verplaatsen naar leeg vak, bevestiging annuleren/accepteren, randscrollen, touch-cancel en behouden na herladen. Het nieuwe modulebestand wordt ook in de offline build meegenomen.
-
-De speciale teams zijn opnieuw onderzocht op 18 november 2026. De actieve omgeving staat de bronwebsites nog niet toe (CONNECT 403, runtimebeleid zonder de opgeslagen domeinuitbreiding). Beschikbare openbare GitHub-datasets bevestigen geen exacte FIFA 22-rosters of badges voor Soccer Aid en adidas All-Star. De onbevestigde status blijft daarom behouden; er zijn geen spelers of vermeende officiële logo's verzonnen.
