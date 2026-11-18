@@ -1,4 +1,4 @@
-const VERSION='6e5eed5d650d48ac';
+const VERSION='0f12ffba0e531500';
 const PREFIX=`fifa22-${new URL(self.registration.scope).pathname}-`;
 const CACHE=PREFIX+VERSION;
 const IMAGE_CACHE=PREFIX+'team-images-v1';
