@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto';
 import {mkdir,copyFile,readFile,writeFile,cp} from 'node:fs/promises';
-const files=['app.js','engine.js','storage.js','style.css','pwa.js','manifest.webmanifest','catalog.js'];
+const files=['app.js','bracket.js','engine.js','storage.js','style.css','pwa.js','manifest.webmanifest','catalog.js'];
 await mkdir('dist',{recursive:true});
 for(const file of files)await copyFile('public/'+file,'dist/'+file);
 await cp('public/data','dist/data',{recursive:true});

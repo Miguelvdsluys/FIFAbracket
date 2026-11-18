@@ -54,3 +54,9 @@ Open de app eerst volledig met internet. Zodra onderaan **Beschikbaar offline** 
 De serviceworker blijft binnen het pad van deze app, cachet alleen appbestanden en verwijdert geen toernooidata. Nieuwe builds krijgen automatisch een nieuwe cacheversie. Sluit alle geopende appvensters en tabbladen en open de app opnieuw om een gereedstaande update te activeren. De Node/SQLite-versie heeft geen offline serviceworker, omdat die de server nodig heeft voor opslag.
 
 De mobiele interface heeft een vaste navigatiebalk, knoppen van minimaal 44 pixels, numerieke toetsenborden voor scores, een rondekiezer en schermvullende formulieren. Grote ranglijsten kunnen binnen hun eigen tabel horizontaal worden gescrold.
+
+## Volledig bracket
+
+Een toernooi opent standaard als gespiegelde toernooiboom: de eerste wedstrijden staan links en rechts, vervolgrondes lopen naar het midden en de finale staat centraal. Verbindingslijnen volgen de oorspronkelijke wedstrijdindices. Winnaars en vrijstellingen komen daardoor op dezelfde plek terecht als in de bestaande rondeweergave.
+
+Alle wedstrijdkaarten zijn klikbaar, ook eerder bevestigde uitslagen. **Alles in beeld** past het hele schema in de beschikbare breedte; **＋ / −** vergroten of verkleinen het overzicht. Op mobiel kun je het schema in beide richtingen verschuiven of **Per ronde** kiezen voor grote invoerkaarten. De layout ondersteunt 2–32 teams, inclusief vrijstellingen. Node-tests controleren iedere kaart en verbinding; de browsercontrole test 16 teams, correcties, mobiel zoomen/scrollen en offline herladen.
