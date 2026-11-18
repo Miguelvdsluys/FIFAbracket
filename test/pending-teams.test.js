@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createTournament,addTeam,openTeamSlots,saveResult,matches,stats,winner} from '../public/engine.js';
+const catalog={id:'original',name:'Original',teams:Array.from({length:32},(_,i)=>({id:'t'+i,name:'Test '+i})),players:Array.from({length:32},(_,i)=>({id:'p'+i,name:'Player '+i,teamId:'t'+i}))};
+test('acht plekken starten met twee teams, resultaat opslaan en later zes teams invullen',()=>{
+ const t=createTournament('Later invullen',catalog,['t0','t1'],false,8);assert.equal(openTeamSlots(t).length,6);assert.equal(t.rounds[0].filter(m=>m.bye).length,0);
+ saveResult(t,0,0,{score:[2,1],goals:[{side:0,kind:'player',playerId:'p0',count:2}]});const original=structuredClone(t.rounds[0][0].result);
+ const restored=JSON.parse(JSON.stringify(t));for(let n=2;n<8;n++){const slot=openTeamSlots(restored)[0];addTeam(restored,'t'+n,slot.index,slot.side);}
+ assert.deepEqual(restored.rounds[0][0].result,original);assert.equal(restored.teamIds.length,8);assert.equal(openTeamSlots(restored).length,0);assert.equal(restored.entryCatalog,undefined);assert.equal(matches([restored]).length,1);assert.equal(stats([restored]).players[0].goals,2);assert.equal(restored.rounds[1][0].teams[0],'t0');
+ for(let r=0;r<restored.rounds.length;r++)restored.rounds[r].forEach((m,i)=>{if(!m.bye&&!m.result)saveResult(restored,r,i,{score:[1,0],goals:[]});});assert.equal(matches([restored]).length,7);assert.ok(winner(restored.rounds.at(-1)[0]));
+});
+test('latere teamselecties komen uit de oorspronkelijke catalogussnapshot',()=>{const source=structuredClone(catalog);const t=createTournament('T',source,['t0','t1'],false,8);source.teams[2].name='Anders';source.players[2].name='Anders';addTeam(t,'t2',1,0);assert.equal(t.version.teams.find(x=>x.id==='t2').name,'Test 2');assert.equal(t.version.players.find(x=>x.id==='p2').name,'Player 2');assert.throws(()=>addTeam(t,'t2',1,1));assert.throws(()=>addTeam(t,'t3',0,0));});
+test('leeg is geen vrijstelling; juiste vrijstellingen voor ieder gepland aantal',()=>{for(let count=2;count<=32;count++){const t=createTournament('T',catalog,['t0','t1'],false,count);assert.equal(openTeamSlots(t).length,count-2);const first=t.rounds[0].findIndex(m=>m.teams.every(Boolean)&&!m.bye);assert.ok(first>=0);saveResult(t,0,first,{score:[1,0],goals:[]});assert.equal(matches([t]).length,1);let n=2;while(openTeamSlots(t).length){const slot=openTeamSlots(t)[0];addTeam(t,'t'+n++,slot.index,slot.side);}for(let r=0;r<t.rounds.length;r++)t.rounds[r].forEach((m,i)=>{if(!m.bye&&!m.result)saveResult(t,r,i,{score:[1,0],goals:[]});});assert.equal(matches([t]).length,count-1);}});

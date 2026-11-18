@@ -64,3 +64,15 @@ Alle wedstrijdkaarten zijn klikbaar, ook eerder bevestigde uitslagen. **Alles in
 ## Herstel van een oude geïnstalleerde versie
 
 Open de website eenmalig met `?update=nieuw` en start de app opnieuw. De nieuwe serviceworker neemt over zonder herinstallatie. De gewone webpagina, de geïnstalleerde app en offline gebruik krijgen dezelfde releasebestanden. Alleen appcaches worden vervangen; toernooien blijven in hun bestaande IndexedDB-opslag. Verwijder geen sitegegevens om een update te forceren.
+
+## Beginnen voordat alle teams bekend zijn
+
+Kies het uiteindelijke aantal plekken (2–32), maar selecteer minimaal twee teams om het toernooi te starten. Bij een gedeeltelijke start komen de eerste twee teams in een speelbare eerste wedstrijd. De overige plekken blijven leeg; ze tellen niet als vrijstelling en leveren geen fictieve resultaten op.
+
+Tik op **Team toevoegen** in een lege plek of op **Teams aanvullen**. De teamkiezer verbergt al gebruikte teams. De oorspronkelijke catalogus wordt voor gedeeltelijke toernooien vastgelegd, zodat later toegevoegde spelers uit dezelfde selectieversie komen. Nadat alle plekken zijn ingevuld, wordt de extra catalogussnapshot opgeruimd. Toevoegen wist geen uitslagen of doelpunten. Vrijstellingen blijven uitsluitend afhankelijk van het geplande aantal teams.
+
+Een geopend toernooi gebruikt standaard het hele beschikbare scherm, met grotere kaarten en ruimte om te verschuiven en zoomen. **Normaal venster** toont de gewone navigatie weer. Scrollpositie wordt bij het opslaan van een wedstrijd behouden.
+
+## Club- en landenlogo's
+
+Alle 734 teams hebben `logoUrl` en `flagUrl` uit de oorspronkelijke CSV (`club_logo_url` / `nation_logo_url`). De app toont deze bronafbeeldingen in teamkeuzes, brackets, wedstrijdformulieren en ranglijsten. Afbeeldingen worden door `cdn.sofifa.net` geleverd; de bron kan bereikbaarheid en vormgeving wijzigen. Bij een mislukte download volgt de bronvlag en daarna de initialen. De serviceworker bewaart bekeken afbeeldingen apart voor offline gebruik en raakt daarbij de toernooidatabase niet aan. Bij de allereerste offline weergave van een nog niet bekeken logo blijven de initialen beschikbaar.

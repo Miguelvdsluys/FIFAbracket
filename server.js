@@ -16,7 +16,7 @@ const server=http.createServer(async(req,res)=>{
    if(req.method==='GET'){const row=db.prepare('SELECT * FROM state WHERE id=1').get();return res.end(JSON.stringify({revision:row.revision,...JSON.parse(row.body)}));}
    if(req.method==='PUT'){
     if(req.headers.origin && new URL(req.headers.origin).host!==req.headers.host){res.writeHead(403);return res.end('{}');}
-    let body='';for await(const chunk of req){body+=chunk;if(body.length>10_000_000){res.writeHead(413);return res.end('{}');}}
+    let body='';for await(const chunk of req){body+=chunk;if(body.length>32_000_000){res.writeHead(413);return res.end('{}');}}
     const {revision,versions,tournaments}=JSON.parse(body);
     if(!Array.isArray(versions)||!Array.isArray(tournaments))throw Error('Ongeldige gegevens');
     const result=db.prepare('UPDATE state SET revision=revision+1,body=? WHERE id=1 AND revision=?').run(JSON.stringify({versions,tournaments}),revision);
