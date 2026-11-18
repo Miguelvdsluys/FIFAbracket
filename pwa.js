@@ -49,7 +49,7 @@ updateButton.addEventListener('click',()=>checkForUpdate(true));
 if(document.documentElement.dataset.storage==='browser'&&'serviceWorker' in navigator){
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(initialController)updateReady();});
  navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='APP_UPDATED'&&initialController)updateReady();});
- navigator.serviceWorker.register('./sw.js?v=6549b7af93ae0373',{updateViaCache:'none'}).then(async value=>{
+ navigator.serviceWorker.register('./sw.js?v=4bf80c2a8be62518',{updateViaCache:'none'}).then(async value=>{
   registration=value;registration.addEventListener('updatefound',()=>watchWorker(registration.installing));watchWorker(registration.installing);
   await navigator.serviceWorker.ready;document.querySelector('#offline-ready').hidden=false;
   await checkForUpdate();

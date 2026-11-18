@@ -1,0 +1,660 @@
+{
+  "source": {
+    "kind": "user-supplied-screenshots",
+    "receivedAt": "2026-11-18",
+    "description": "Vijf door de gebruiker aangeleverde FIFA 22-spelerslijsten; exacte squad-update niet zichtbaar. Eerste drie afbeeldingen: Soccer Aid (blauwe badge). Laatste twee: adidas All-Star.",
+    "verifiedAgainstOfficialDatabase": false
+  },
+  "soccerAid": {
+    "teamId": "special:soccer-aid",
+    "count": 41,
+    "players": [
+      {
+        "id": "special-player:peter-schmeichel",
+        "name": "Peter Schmeichel",
+        "displayName": "Peter Schmeichel",
+        "shortName": "P. Schmeichel",
+        "position": "GK",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:edwin-van-der-sar",
+        "name": "Edwin van der Sar",
+        "displayName": "Edwin van der Sar",
+        "shortName": "E. van der Sar",
+        "position": "GK",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:cafu",
+        "name": "Cafu",
+        "displayName": "Cafu",
+        "shortName": "Cafú",
+        "position": "DEF",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:franco-baresi",
+        "name": "Franco Baresi",
+        "displayName": "Franco Baresi",
+        "shortName": "F. Baresi",
+        "position": "DEF",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:fabio-cannavaro",
+        "name": "Fabio Cannavaro",
+        "displayName": "Fabio Cannavaro",
+        "shortName": "F. Cannavaro",
+        "position": "DEF",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:roberto-carlos",
+        "name": "Roberto Carlos",
+        "displayName": "Roberto Carlos",
+        "shortName": "Roberto Carlos",
+        "position": "DEF",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:marcel-desailly",
+        "name": "Marcel Desailly",
+        "displayName": "Marcel Desailly",
+        "shortName": "M. Desailly",
+        "position": "DEF",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:ashley-cole",
+        "name": "Ashley Cole",
+        "displayName": "Ashley Cole",
+        "shortName": "A. Cole",
+        "position": "DEF",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:sol-campbell",
+        "name": "Sol Campbell",
+        "displayName": "Sol Campbell",
+        "shortName": "S. Campbell",
+        "position": "DEF",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:pele",
+        "name": "Pelé",
+        "displayName": "Pelé",
+        "shortName": "Pelé",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:diego-maradona",
+        "name": "Diego Maradona",
+        "displayName": "Diego Maradona",
+        "shortName": "D. Maradona",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:zinedine-zidane",
+        "name": "Zinédine Zidane",
+        "displayName": "Zinédine Zidane",
+        "shortName": "Z. Zidane",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:lothar-matthaus",
+        "name": "Lothar Matthäus",
+        "displayName": "Lothar Matthäus",
+        "shortName": "L. Matthäus",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:david-beckham",
+        "name": "David Beckham",
+        "displayName": "David Beckham",
+        "shortName": "D. Beckham",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:clarence-seedorf",
+        "name": "Clarence Seedorf",
+        "displayName": "Clarence Seedorf",
+        "shortName": "C. Seedorf",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:paul-scholes",
+        "name": "Paul Scholes",
+        "displayName": "Paul Scholes",
+        "shortName": "P. Scholes",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:robert-pires",
+        "name": "Robert Pirès",
+        "displayName": "Robert Pirès",
+        "shortName": "R. Pirès",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:juan-sebastian-veron",
+        "name": "Juan Sebastián Verón",
+        "displayName": "Juan Sebastián Verón",
+        "shortName": "J. Verón",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:michael-essien",
+        "name": "Michael Essien",
+        "displayName": "Michael Essien",
+        "shortName": "M. Essien",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:roy-keane",
+        "name": "Roy Keane",
+        "displayName": "Roy Keane",
+        "shortName": "R. Keane",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:claude-makelele",
+        "name": "Claude Makélélé",
+        "displayName": "Claude Makélélé",
+        "shortName": "C. Makélélé",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:david-ginola",
+        "name": "David Ginola",
+        "displayName": "David Ginola",
+        "shortName": "D. Ginola",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:fredrik-ljungberg",
+        "name": "Fredrik Ljungberg",
+        "displayName": "Fredrik Ljungberg",
+        "shortName": "F. Ljungberg",
+        "position": "MID",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:ronaldinho",
+        "name": "Ronaldinho",
+        "displayName": "Ronaldinho",
+        "shortName": "Ronaldinho",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:ruud-gullit",
+        "name": "Ruud Gullit",
+        "displayName": "Ruud Gullit",
+        "shortName": "R. Gullit",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:luis-figo",
+        "name": "Luís Figo",
+        "displayName": "Luís Figo",
+        "shortName": "Luís Figo",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:kenny-dalglish",
+        "name": "Kenny Dalglish",
+        "displayName": "Kenny Dalglish",
+        "shortName": "K. Dalglish",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:alessandro-del-piero",
+        "name": "Alessandro Del Piero",
+        "displayName": "Alessandro Del Piero",
+        "shortName": "A. Del Piero",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:wayne-rooney",
+        "name": "Wayne Rooney",
+        "displayName": "Wayne Rooney",
+        "shortName": "W. Rooney",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:alan-shearer",
+        "name": "Alan Shearer",
+        "displayName": "Alan Shearer",
+        "shortName": "A. Shearer",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:patrick-kluivert",
+        "name": "Patrick Kluivert",
+        "displayName": "Patrick Kluivert",
+        "shortName": "P. Kluivert",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:ian-rush",
+        "name": "Ian Rush",
+        "displayName": "Ian Rush",
+        "shortName": "I. Rush",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:andriy-shevchenko",
+        "name": "Andriy Shevchenko",
+        "displayName": "Andriy Shevchenko",
+        "shortName": "A. Shevchenko",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:michael-owen",
+        "name": "Michael Owen",
+        "displayName": "Michael Owen",
+        "shortName": "M. Owen",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:eric-cantona",
+        "name": "Eric Cantona",
+        "displayName": "Eric Cantona",
+        "shortName": "E. Cantona",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:henrik-larsson",
+        "name": "Henrik Larsson",
+        "displayName": "Henrik Larsson",
+        "shortName": "H. Larsson",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:gianfranco-zola",
+        "name": "Gianfranco Zola",
+        "displayName": "Gianfranco Zola",
+        "shortName": "G. Zola",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:hernan-crespo",
+        "name": "Hernán Crespo",
+        "displayName": "Hernán Crespo",
+        "shortName": "H. Crespo",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:john-barnes",
+        "name": "John Barnes",
+        "displayName": "John Barnes",
+        "shortName": "J. Barnes",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:joe-cole",
+        "name": "Joe Cole",
+        "displayName": "Joe Cole",
+        "shortName": "J. Cole",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "special-player:robbie-keane",
+        "name": "Robbie Keane",
+        "displayName": "Robbie Keane",
+        "shortName": "R. Keane",
+        "position": "FWD",
+        "teamId": "special:soccer-aid",
+        "manual": true,
+        "source": "user-supplied-screenshots"
+      }
+    ]
+  },
+  "adidasAllStar": {
+    "teamId": "special:adidas-all-star",
+    "count": 23,
+    "players": [
+      {
+        "id": "sofifa:player:192448",
+        "name": "Marc-André ter Stegen",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "M. ter Stegen",
+        "displayName": "M. ter Stegen",
+        "position": "GK",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:167495",
+        "name": "Manuel Peter Neuer",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "M. Neuer",
+        "displayName": "M. Neuer",
+        "position": "GK",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:212218",
+        "name": "Aymeric Laporte",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "A. Laporte",
+        "displayName": "A. Laporte",
+        "position": "DEF",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:235212",
+        "name": "Achraf Hakimi Mouh",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "A. Hakimi",
+        "displayName": "A. Hakimi",
+        "position": "DEF",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:205988",
+        "name": "Luke Shaw",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "L. Shaw",
+        "displayName": "L. Shaw",
+        "position": "DEF",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:228618",
+        "name": "Ferland Mendy",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "F. Mendy",
+        "displayName": "F. Mendy",
+        "position": "DEF",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:197445",
+        "name": "David Olatukunbo Alaba",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "D. Alaba",
+        "displayName": "D. Alaba",
+        "position": "DEF",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:226851",
+        "name": "Benjamin Pavard",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "B. Pavard",
+        "displayName": "B. Pavard",
+        "position": "DEF",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:251854",
+        "name": "Pedro González López",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "Pedri",
+        "displayName": "Pedri",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:215914",
+        "name": "N'Golo Kanté",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "N. Kanté",
+        "displayName": "N. Kanté",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:200104",
+        "name": "손흥민 孙兴慜",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "H. Son",
+        "displayName": "H. Son",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:252371",
+        "name": "Jude Victor William Bellingham",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "J. Bellingham",
+        "displayName": "J. Bellingham",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:182521",
+        "name": "Toni Kroos",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "T. Kroos",
+        "displayName": "T. Kroos",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:209658",
+        "name": "Leon Christoph Goretzka",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "L. Goretzka",
+        "displayName": "L. Goretzka",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:195864",
+        "name": "Paul Pogba",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "P. Pogba",
+        "displayName": "P. Pogba",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:218667",
+        "name": "Bernardo Mota Veiga de Carvalho e Silva",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "Bernardo Silva",
+        "displayName": "Bernardo Silva",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:234378",
+        "name": "Declan Rice",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "D. Rice",
+        "displayName": "D. Rice",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:206113",
+        "name": "Serge David Gnabry",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "S. Gnabry",
+        "displayName": "S. Gnabry",
+        "position": "MID",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:158023",
+        "name": "Lionel Andrés Messi Cuccittini",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "L. Messi",
+        "displayName": "L. Messi",
+        "position": "FWD",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:242444",
+        "name": "João Félix Sequeira",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "João Félix",
+        "displayName": "João Félix",
+        "position": "FWD",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:209331",
+        "name": "Mohamed Salah Ghaly",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "M. Salah",
+        "displayName": "M. Salah",
+        "position": "FWD",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:165153",
+        "name": "Karim Benzema",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "K. Benzema",
+        "displayName": "K. Benzema",
+        "position": "FWD",
+        "source": "user-supplied-screenshots"
+      },
+      {
+        "id": "sofifa:player:211110",
+        "name": "Paulo Bruno Exequiel Dybala",
+        "teamId": "special:adidas-all-star",
+        "manual": true,
+        "shortName": "P. Dybala",
+        "displayName": "P. Dybala",
+        "position": "FWD",
+        "source": "user-supplied-screenshots"
+      }
+    ]
+  }
+}

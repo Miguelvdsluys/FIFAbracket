@@ -3169,5 +3169,19 @@
     "file": "113743.png",
     "source": "luukhopman/football-logos",
     "sourceFile": "fifa-logo-library/history/2022-23/Sweden - Allsvenskan/Varbergs BoIS.png"
+  },
+  {
+    "teamId": "special:soccer-aid",
+    "team": "Soccer Aid",
+    "file": "special-soccer-aid.png",
+    "source": "Door gebruiker aangeleverde screenshot; badge gereconstrueerd met beeldbewerking",
+    "sourceFile": "user-supplied-screenshot-reference"
+  },
+  {
+    "teamId": "special:adidas-all-star",
+    "team": "adidas All-Star",
+    "file": "special-adidas-all-star.svg",
+    "source": "simple-icons/simple-icons",
+    "sourceFile": "https://raw.githubusercontent.com/simple-icons/simple-icons/5.21.1/icons/adidas.svg"
   }
 ]

@@ -80,7 +80,7 @@ export function stats(ts){
  ts.forEach(t=>{t.teamIds.forEach(id=>team(t,id).entries++);const f=t.rounds.at(-1)[0];f.teams.filter(Boolean).forEach(id=>team(t,id).finals++);if(f.result)team(t,winner(f)).titles++;});
  matches(ts).forEach(m=>{const t=m.tournament; m.teams.forEach((id,s)=>{const x=team(t,id);x.played++;x.gf+=m.result.score[s];x.ga+=m.result.score[1-s];if(winner(m)===id)x.wins++;});
  const key=[...m.teams].sort().join('|');if(!duels.has(key))duels.set(key,{ids:[...m.teams].sort(),matches:[],goals:0});const d=duels.get(key);d.matches.push(m);d.goals+=m.result.score[0]+m.result.score[1];
- m.result.goals.filter(g=>g.kind==='player').forEach(g=>{const p=t.version.players.find(p=>p.id===g.playerId);if(!players.has(p.id))players.set(p.id,{id:p.id,name:p.name,goals:0,matchIds:new Set(),teams:{},tournaments:{}});const x=players.get(p.id);x.goals+=g.count;x.matchIds.add(m.id);x.teams[m.teams[g.side]]=(x.teams[m.teams[g.side]]||0)+g.count;x.tournaments[t.id]=(x.tournaments[t.id]||0)+g.count;});
+ m.result.goals.filter(g=>g.kind==='player').forEach(g=>{const p=t.version.players.find(p=>p.id===g.playerId);if(!players.has(p.id))players.set(p.id,{id:p.id,name:p.displayName||p.name,goals:0,matchIds:new Set(),teams:{},tournaments:{}});const x=players.get(p.id);x.goals+=g.count;x.matchIds.add(m.id);x.teams[m.teams[g.side]]=(x.teams[m.teams[g.side]]||0)+g.count;x.tournaments[t.id]=(x.tournaments[t.id]||0)+g.count;});
  });return {teams:[...teams.values()],players:[...players.values()],duels:[...duels.values()]};
 }
 export function validateVersion(v){
