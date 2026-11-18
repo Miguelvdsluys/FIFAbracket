@@ -1,4 +1,4 @@
-import {validateVersion} from './engine.js?v=b0d05c6c3085c56d';
+import {validateVersion} from './engine.js?v=1c72c0afb59150b7';
 export const DEFAULT_CATALOG_ID='builtin-sofifa-220002-v1';
 export function withDefaultCatalog(state,catalog){
  return {...state,versions:[catalog,...state.versions.filter(v=>v.id!==DEFAULT_CATALOG_ID)]};
