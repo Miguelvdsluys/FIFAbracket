@@ -1,4 +1,4 @@
-import {winner} from './engine.js?v=c8bc9e8fb5abe286';
+import {winner} from './engine.js?v=e855e6fac876e63c';
 const FORMAT='fifa22-encrypted-backup',ITERATIONS=600000,MAX_FILE=64*1024*1024;
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
 const fail=message=>{throw Error(message);};
@@ -15,7 +15,7 @@ function checkVersion(version){
  return {teams,players};
 }
 function checkTournament(t){
- if(!t||!id(t.id)||!text(t.name)||!date(t.createdAt)||!Array.isArray(t.teamIds)||t.teamIds.length<2||!unique(t.teamIds)||!Array.isArray(t.rounds))fail('Een toernooi in het bestand is ongeldig.');
+ if(!t||!id(t.id)||!text(t.name)||!date(t.createdAt)||!Array.isArray(t.teamIds)||t.teamIds.length<1||!unique(t.teamIds)||!Array.isArray(t.rounds))fail('Een toernooi in het bestand is ongeldig.');
  const count=t.teamCount??t.teamIds.length;if(!Number.isInteger(count)||count<2||count>32||t.teamIds.length>count)fail('Een toernooi heeft een ongeldig aantal plekken.');
  const version=checkVersion(t.version);if(t.entryCatalog)checkVersion(t.entryCatalog);
  if(t.teamIds.some(team=>!version.teams.has(team)))fail('Een toernooi verwijst naar een ontbrekend team.');

@@ -32,7 +32,9 @@ export function editTeam(t,index,side,target,catalog,confirm=false){
  const from=t.rounds[0][index];
  if(!from||![0,1].includes(side)||from.bye&&side===1||!from.teams[side])throw Error('Kies een ingevulde teamplek.');
  const oldId=from.teams[side];let destination=null,newTeam=null;
- if(typeof target==='string'){
+ if(target===null){
+  if(!openTeamSlots(t).length||t.teamIds.length<=1)throw Error('Verwijderen kan als er een vrije plek is en er minstens één team overblijft.');
+ }else if(typeof target==='string'){
   if(target===oldId)return {saved:true};
   t.rounds[0].forEach((m,i)=>m.teams.forEach((id,s)=>{if(id===target)destination={index:i,side:s};}));
   if(!destination){
@@ -53,9 +55,14 @@ export function editTeam(t,index,side,target,catalog,confirm=false){
  for(const key of paths){const [r,i]=key.split(':').map(Number);t.rounds[r][i].result=null;}
  if(destination){const m=t.rounds[0][destination.index],other=m.teams[destination.side];m.teams[destination.side]=oldId;from.teams[side]=other;}
  else {
-  from.teams[side]=newTeam.id;t.teamIds=t.teamIds.map(id=>id===oldId?newTeam.id:id);
-  t.version.teams=t.version.teams.filter(team=>team.id!==oldId);t.version.teams.push(structuredClone(newTeam));
-  t.version.players=t.version.players.filter(player=>player.teamId!==oldId);t.version.players.push(...structuredClone(catalog.players.filter(player=>player.teamId===newTeam.id)));
+  from.teams[side]=newTeam?.id??null;
+  t.teamIds=newTeam?t.teamIds.map(id=>id===oldId?newTeam.id:id):t.teamIds.filter(id=>id!==oldId);
+  t.version.teams=t.version.teams.filter(team=>team.id!==oldId);
+  t.version.players=t.version.players.filter(player=>player.teamId!==oldId);
+  if(newTeam){
+   t.version.teams.push(structuredClone(newTeam));
+   t.version.players.push(...structuredClone(catalog.players.filter(player=>player.teamId===newTeam.id)));
+  }
  }
  propagate(t);return {saved:true};
 }
