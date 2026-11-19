@@ -1,4 +1,4 @@
-import {encryptBackup,decryptBackup,planImport,MAX_BACKUP_BYTES} from './transfer.js?v=a9a4fb92c50d6401';
+import {encryptBackup,decryptBackup,planImport,MAX_BACKUP_BYTES} from './transfer.js?v=c8bc9e8fb5abe286';
 export function installPersonalData({getState,onApply,modal,notify}){
  const $=selector=>document.querySelector(selector),escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const countMatches=tournaments=>tournaments.reduce((total,t)=>total+t.rounds.flat().filter(m=>m.result).length,0);

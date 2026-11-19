@@ -74,6 +74,16 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   vertical-align: -0.12em;
 }
 
+#account-dialog { width: min(440px, calc(100% - 32px)); }
+#account-form h2 { margin-top: 0; }
+#account-credentials { display: grid; gap: 12px; }
+#account-credentials[hidden], #account-actions[hidden] { display: none; }
+#account-credentials label { display: grid; gap: 5px; }
+#account-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+#account-status:empty { display: none; }
+#account-email { overflow-wrap: anywhere; }
+#sync-notice { margin: 12px 24px 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; }
+#account-import { margin: 0 0 12px; }
 .goal-players {
   display: grid;
   gap: 5px;

@@ -1,10 +1,30 @@
-import {installPersonalData} from './personal-data.js?v=a9a4fb92c50d6401';
-import {installTeamDrag} from './team-drag.js?v=a9a4fb92c50d6401';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=a9a4fb92c50d6401';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=a9a4fb92c50d6401';
-import {loadState,saveState} from './storage.js?v=a9a4fb92c50d6401';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=a9a4fb92c50d6401';
-let state=await loadState(),page='dashboard',selected=null,filterTournament='',filterDate='',sort='titles';
+import {installPersonalData} from './personal-data.js?v=c8bc9e8fb5abe286';
+import {installTeamDrag} from './team-drag.js?v=c8bc9e8fb5abe286';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=c8bc9e8fb5abe286';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=c8bc9e8fb5abe286';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=c8bc9e8fb5abe286';
+import {planImport} from './transfer.js?v=c8bc9e8fb5abe286';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=c8bc9e8fb5abe286';
+let storage, initialState;
+try {
+ storage=await initializeStorage();
+ initialState=storage.state??await loadState();
+} catch(error) {
+ const app=document.querySelector('#app');
+ app.innerHTML='<div class="empty"><h2>Toernooien laden lukt niet</h2><p>Controleer je internetverbinding om je accounttoernooien te openen.</p><button class="primary" type="button">Opnieuw proberen</button></div>';
+ app.querySelector('button').onclick=()=>location.reload();
+ throw error;
+}
+if(storage==='unavailable'){
+ const notice=document.querySelector('#sync-notice');
+ notice.hidden=false;
+ notice.textContent='Accountopslag is nog niet beschikbaar. Toernooien worden op dit apparaat opgeslagen.';
+}
+if(storage.state){
+ document.documentElement.dataset.accountStorage='true';
+ document.querySelector('#storage-label').textContent='Opgeslagen in je account';
+}
+let state=initialState,page='dashboard',selected=null,filterTournament='',filterDate='',sort='titles';
 const statsSections = [
  ['teams', 'Teams'],
  ['scorers', 'Topscorers'],
@@ -43,7 +63,16 @@ const teamMatches=(team,query)=>[team.name,...team.aliases||[]].some(name=>norma
 const done=t=>!!t.rounds.at(-1)[0].result;
 const roundName=(t,r)=>t.rounds.length-r===1?'Finale':t.rounds.length-r===2?'Halve finale':t.rounds.length-r===3?'Kwartfinale':t.rounds.length-r===4?'Achtste finale':t.rounds.length-r===5?'Zestiende finale':`Ronde ${r+1}`;
 const notify=s=>{$('#toast').textContent=s;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),4500);};
-async function persist(){try{state.revision=await saveState(state);}catch(error){state=withDefaultCatalog(await loadState(),defaultCatalog);render();throw error;}}
+let confirmedState=structuredClone(state);
+async function persist(){
+ try{state.revision=await saveState(state);confirmedState=structuredClone(state);}
+ catch(error){
+  try{state=withDefaultCatalog(await loadState(),defaultCatalog);confirmedState=structuredClone(state);}
+  catch{state=structuredClone(confirmedState);}
+  render();
+  throw error;
+ }
+}
 function modal(title,body){$('#dialog-content').innerHTML=`<div class="modal-head"><h2>${title}</h2><button data-close aria-label="Sluiten">×</button></div>${body}`;$('#modal').classList.toggle('team-picker-modal',body.includes('id="team-picker"')||body.includes('id="entry-picker"')||body.includes('id="team-manager"'));if(!$('#modal').open)$('#modal').showModal();}
 const empty=(title,text,button='Nieuw toernooi',action='new')=>`<div class="empty"><span class="empty-symbol">⌘</span><h3>${title}</h3><p>${text}</p><button class="primary" data-action="${action}">${button} ↗</button></div>`;
 const title=(eyebrow,h,sub,button=true)=>`<div class="page-title"><div><div class="eyebrow">${eyebrow}</div><h1>${h}</h1><p>${sub}</p></div>${button?'<div class="title-actions"><button class="mobile-catalog subtle" data-action="catalog" aria-label="Teamcatalogus beheren">⚙</button><button class="primary" data-action="new">＋ Nieuw toernooi</button></div>':''}</div>`;
@@ -222,4 +251,34 @@ $('#catalog-button').onclick=catalog;window.addEventListener('hashchange',render
 
 installTeamDrag({onDrop:(from,to)=>applyTeamEdit(from.tid,from.index,from.side,{index:to.index,side:to.side}),onError:error=>notify(error.message)});
 
-installPersonalData({getState:()=>state,modal,notify,onApply:async next=>{const restored=withDefaultCatalog(next,defaultCatalog);const revision=await saveState(restored);state={...restored,revision};selected=null;filterTournament='';filterDate='';location.hash='tournaments';render();}});
+installPersonalData({getState:()=>state,modal,notify,onApply:async next=>{const restored=withDefaultCatalog(next,defaultCatalog);const revision=await saveState(restored);state={...restored,revision};confirmedState=structuredClone(state);selected=null;filterTournament='';filterDate='';location.hash='tournaments';render();}});
+
+if(storage.state){
+ const copyButton=$('#account-import'),copyStatus=$('#account-import-status');
+ copyButton.hidden=false;
+ copyButton.addEventListener('click',async()=>{
+  copyButton.disabled=true;
+  copyStatus.hidden=false;
+  copyStatus.textContent='Lokale toernooien controleren…';
+  try{
+   const local=await loadLocalState();
+   if(!local.tournaments.length){copyStatus.textContent='Dit apparaat heeft geen lokale toernooien.';return;}
+   if(!confirm('Lokale toernooien naar dit account kopiëren? De lokale exemplaren blijven bewaard.')){
+    copyStatus.textContent='Kopiëren geannuleerd.';return;
+   }
+   const current=withDefaultCatalog(await loadState(),defaultCatalog);
+   const archive={app:'FIFA22BracketTracker',version:1,createdAt:new Date().toISOString(),label:'',state:local};
+   const {state:next,summary}=planImport(current,archive);
+   if(summary.added){
+    next.revision=await saveState(next);
+   }
+   state=summary.added?next:current;
+   confirmedState=structuredClone(state);
+   render();
+   copyStatus.textContent=summary.conflicts.length
+    ? `Gekopieerd: ${summary.added}. Bestaande accountversies behouden: ${summary.conflicts.length}.`
+    : summary.added ? `Gekopieerd: ${summary.added}. Je ziet ze nu ook op andere apparaten.` : 'Deze toernooien staan al in je account.';
+  }catch(error){copyStatus.textContent=error.message||'Kopiëren mislukt. Probeer het opnieuw.';}
+  finally{copyButton.disabled=false;}
+ });
+}

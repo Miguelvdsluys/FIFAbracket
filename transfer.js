@@ -1,4 +1,4 @@
-import {winner} from './engine.js?v=a9a4fb92c50d6401';
+import {winner} from './engine.js?v=c8bc9e8fb5abe286';
 const FORMAT='fifa22-encrypted-backup',ITERATIONS=600000,MAX_FILE=64*1024*1024;
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
 const fail=message=>{throw Error(message);};
