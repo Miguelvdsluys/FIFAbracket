@@ -81,6 +81,31 @@ export function saveResult(t,r,i,result,confirm=false){
  m.result={...result,penalties:result.score[0]===result.score[1]?result.penalties:null,date:result.date||new Date().toISOString()};propagate(t);return {saved:true};
 }
 export function matches(ts){return ts.flatMap(t=>t.rounds.flatMap((round,r)=>round.filter(m=>m.result).map(m=>({...m,tournament:t,round:r}))));}
+function addPlayerAppearances(tournaments,scorers){
+ if(!scorers.size)return;
+ for(const t of tournaments){
+  const roster=new Map(),appeared=new Set();
+  for(const player of t.version.players){
+   if(!scorers.has(player.id))continue;
+   if(!roster.has(player.teamId))roster.set(player.teamId,[]);
+   roster.get(player.teamId).push(player.id);
+  }
+  const final=t.rounds.at(-1)[0];
+  for(const round of t.rounds)for(const match of round){
+   if(!match.result)continue;
+   const participants=new Set(match.teams.flatMap(id=>roster.get(id)||[]));
+   const champions=match===final?new Set(roster.get(winner(match))):null;
+   for(const id of participants){
+    const player=scorers.get(id);
+    player.played++;
+    if(champions)player.finals++;
+    if(champions?.has(id))player.titles++;
+    appeared.add(id);
+   }
+  }
+  for(const id of appeared)scorers.get(id).tournamentsPlayed++;
+ }
+}
 export function stats(ts){
  const teams=new Map(),players=new Map(),duels=new Map();
  let homeWins=0,awayWins=0;
@@ -92,8 +117,10 @@ export function stats(ts){
  else if(winningTeam===m.teams[1])awayWins++;
  m.teams.forEach((id,s)=>{const x=team(t,id);x.played++;x.gf+=m.result.score[s];x.ga+=m.result.score[1-s];if(winningTeam===id)x.wins++;});
  const key=[...m.teams].sort().join('|');if(!duels.has(key))duels.set(key,{ids:[...m.teams].sort(),matches:[],goals:0});const d=duels.get(key);d.matches.push(m);d.goals+=m.result.score[0]+m.result.score[1];
- m.result.goals.filter(g=>g.kind==='player').forEach(g=>{const p=t.version.players.find(p=>p.id===g.playerId);if(!players.has(p.id))players.set(p.id,{id:p.id,name:p.displayName||p.name,goals:0,matchIds:new Set(),teams:{},tournaments:{}});const x=players.get(p.id);x.goals+=g.count;x.matchIds.add(m.id);x.teams[m.teams[g.side]]=(x.teams[m.teams[g.side]]||0)+g.count;x.tournaments[t.id]=(x.tournaments[t.id]||0)+g.count;});
- });return {teams:[...teams.values()],players:[...players.values()],duels:[...duels.values()],homeWins,awayWins};
+ m.result.goals.filter(g=>g.kind==='player').forEach(g=>{const p=t.version.players.find(p=>p.id===g.playerId);if(!players.has(p.id))players.set(p.id,{id:p.id,name:p.displayName||p.name,goals:0,matchIds:new Set(),teams:{},tournaments:{},played:0,tournamentsPlayed:0,titles:0,finals:0});const x=players.get(p.id);x.goals+=g.count;x.matchIds.add(m.id);x.teams[m.teams[g.side]]=(x.teams[m.teams[g.side]]||0)+g.count;x.tournaments[t.id]=(x.tournaments[t.id]||0)+g.count;});
+ });
+ addPlayerAppearances(ts,players);
+ return {teams:[...teams.values()],players:[...players.values()],duels:[...duels.values()],homeWins,awayWins};
 }
 export function validateVersion(v){
  if(!v.name||!v.source||!v.mode||!v.date||!Array.isArray(v.teams)||!Array.isArray(v.players))throw Error('Versie vereist name, source, mode, date, teams en players.');

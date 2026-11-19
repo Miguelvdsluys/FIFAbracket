@@ -1,10 +1,10 @@
-import {installPersonalData} from './personal-data.js?v=e855e6fac876e63c';
-import {installTeamDrag} from './team-drag.js?v=e855e6fac876e63c';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=e855e6fac876e63c';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=e855e6fac876e63c';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=e855e6fac876e63c';
-import {planImport} from './transfer.js?v=e855e6fac876e63c';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=e855e6fac876e63c';
+import {installPersonalData} from './personal-data.js?v=2057fd388dbd107f';
+import {installTeamDrag} from './team-drag.js?v=2057fd388dbd107f';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=2057fd388dbd107f';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=2057fd388dbd107f';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=2057fd388dbd107f';
+import {planImport} from './transfer.js?v=2057fd388dbd107f';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=2057fd388dbd107f';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -125,8 +125,8 @@ function renderStatsSection(){
  case 'scorers':
   return `<div class="section-title"><h2>Topscorers</h2><span class="eyebrow">EXCLUSIEF STRAFSCHOPPENSERIES</span></div>
    <div class="table-wrap"><table>
-    <thead><tr><th>SPELER</th><th>GOALS</th><th>WEDSTRIJDEN MET GOAL</th></tr></thead>
-    <tbody>${s.players.sort((a,b)=>b.goals-a.goals).map((p,i)=>`<tr data-player="${esc(p.id)}"><td><span class="rank">${i+1}</span>${scorerLabel(p)}</td><td class="lime">${p.goals}</td><td>${p.matchIds.size}</td></tr>`).join('')}</tbody>
+    <thead><tr><th>SPELER</th><th>GOALS</th><th><span aria-hidden="true">🏟️</span> GESPEELD</th><th>TOERNOOIEN</th><th><span aria-hidden="true">🏆</span> TITELS (FINALES)</th></tr></thead>
+    <tbody>${s.players.sort((a,b)=>b.goals-a.goals).map((p,i)=>`<tr data-player="${esc(p.id)}"><td><span class="rank">${i+1}</span>${scorerLabel(p)}</td><td class="lime">${p.goals}</td><td>${p.played}</td><td>${p.tournamentsPlayed}</td><td>${p.titles} (${p.finals})</td></tr>`).join('')}</tbody>
    </table>${!s.players.length?'<div class="quiet">Nog geen doelpunten aan spelers toegewezen.</div>':''}</div>`;
  case 'duels':
   return `<div class="section-title"><h2>Onderlinge duels</h2></div>
