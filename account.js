@@ -34,7 +34,7 @@ const errorMessages = {
 };
 
 let connection;
-function connect() {
+export function connect() {
   connection ??= (async () => {
     const [{ initializeApp }, sdk] = await Promise.all([
       import('https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js'),
