@@ -107,3 +107,14 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   margin: 10px 0 16px;
 }
 .goal-extras button { min-height: 44px; }
+
+.scorer-switcher { margin-bottom: 12px; }
+.nationality-table { min-width: 0; }
+.nationality-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  text-align: left;
+}
+.nationality-button .scorer-flag { flex: none; }
