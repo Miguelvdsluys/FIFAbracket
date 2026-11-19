@@ -3,7 +3,7 @@ let installPrompt;
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 function explainInstall(){
  const dialog=document.querySelector('#modal');
- document.querySelector('#dialog-content').innerHTML=`<div class="modal-head"><h2>Op je telefoon installeren</h2><button data-close aria-label="Sluiten">×</button></div><div class="install-icon">22</div><p>Je eigen toernooitracker op je beginscherm, met een schermvullende weergave.</p><h3>iPhone / iPad</h3><p>Open deze website in <b>Safari</b>. Tik op <b>Deel</b> en vervolgens <b>Zet op beginscherm</b> (of <b>Voeg toe aan beginscherm</b>). Schakel ‘Open als webapp’ in als die optie verschijnt.</p><h3>Android</h3><p>Open de website in <b>Chrome</b>. Kies in het menu <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.</p><div class="notice">Lokale toernooien zijn na de eerste volledige download ook offline beschikbaar. Voor toernooien die in je account staan, heb je internet nodig.</div>`;
+ document.querySelector('#dialog-content').innerHTML=`<div class="modal-head"><h2>Op je telefoon installeren</h2><button data-close aria-label="Sluiten">×</button></div><div class="install-icon">22</div><p>Je eigen toernooitracker op je beginscherm, met een schermvullende weergave.</p><h3>iPhone / iPad</h3><p>Open deze website in <b>Safari</b>. Tik op <b>Deel</b> en vervolgens <b>Zet op beginscherm</b> (of <b>Voeg toe aan beginscherm</b>). Schakel ‘Open als webapp’ in als die optie verschijnt.</p><h3>Android</h3><p>Open de website in <b>Chrome</b>. Kies in het menu <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.</p><div class="notice">Na de eerste volledige download werkt de GitHub-versie ook offline. Toernooien blijven op dit apparaat opgeslagen. Een andere browser of beginscherm-app kan een eigen opslag gebruiken.</div>`;
  if(!dialog.open)dialog.showModal();
 }
 button.hidden=standalone();
@@ -14,7 +14,7 @@ button.addEventListener('click',async()=>{
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;button.hidden=false;});
 window.addEventListener('appinstalled',()=>{button.hidden=true;installPrompt=null;});
 const connection=document.querySelector('#connection-status');
-function connectionStatus(){connection.hidden=navigator.onLine;connection.textContent=document.documentElement.dataset.accountStorage?'Offline · verbinding nodig om accounttoernooien op te slaan':'Offline · gegevens blijven op dit apparaat';}
+function connectionStatus(){connection.hidden=navigator.onLine;connection.textContent='Offline · gegevens blijven op dit apparaat';}
 window.addEventListener('online',connectionStatus);window.addEventListener('offline',connectionStatus);connectionStatus();
 const updateButton=document.querySelector('#update-button');
 const notice=document.querySelector('#update-notice');
@@ -49,7 +49,7 @@ updateButton.addEventListener('click',()=>checkForUpdate(true));
 if(document.documentElement.dataset.storage==='browser'&&'serviceWorker' in navigator){
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(initialController)updateReady();});
  navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='APP_UPDATED'&&initialController)updateReady();});
- navigator.serviceWorker.register('./sw.js?v=315fceaf15fba590',{updateViaCache:'none'}).then(async value=>{
+ navigator.serviceWorker.register('./sw.js?v=7b5f24a6f5649347',{updateViaCache:'none'}).then(async value=>{
   registration=value;registration.addEventListener('updatefound',()=>watchWorker(registration.installing));watchWorker(registration.installing);
   await navigator.serviceWorker.ready;document.querySelector('#offline-ready').hidden=false;
   await checkForUpdate();
