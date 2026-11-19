@@ -58,3 +58,12 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   .stats-switcher { width: 100%; }
   .stats-switcher button { flex: 1; }
 }
+
+.metrics.venue-results {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 36rem;
+}
+.venue-results dd { margin: 0; }
+@media (max-width: 480px) {
+  .stats-switcher button { font-size: 11px; }
+}

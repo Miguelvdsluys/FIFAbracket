@@ -1,14 +1,15 @@
-import {installPersonalData} from './personal-data.js?v=9f9bea3eec2bee40';
-import {installTeamDrag} from './team-drag.js?v=9f9bea3eec2bee40';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=9f9bea3eec2bee40';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=9f9bea3eec2bee40';
-import {loadState,saveState} from './storage.js?v=9f9bea3eec2bee40';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=9f9bea3eec2bee40';
+import {installPersonalData} from './personal-data.js?v=ed29510359be3670';
+import {installTeamDrag} from './team-drag.js?v=ed29510359be3670';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=ed29510359be3670';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=ed29510359be3670';
+import {loadState,saveState} from './storage.js?v=ed29510359be3670';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=ed29510359be3670';
 let state=await loadState(),page='dashboard',selected=null,filterTournament='',filterDate='',sort='titles';
 const statsSections = [
  ['teams', 'Teams'],
  ['scorers', 'Topscorers'],
- ['duels', 'Onderlinge duels']
+ ['duels', 'Onderlinge duels'],
+ ['venue', 'Thuis / uit']
 ];
 let statsSection = 'teams';
 let defaultCatalog;
@@ -47,6 +48,15 @@ function tournaments(){if(!selected)return title('DE WEG NAAR GOUD','Toernooien'
 function filtered(){return state.tournaments.filter(t=>!filterTournament||t.id===filterTournament).map(t=>{if(!filterDate)return t;const clone=structuredClone(t);clone.rounds.forEach(r=>r.forEach(m=>{if(m.result&&m.result.date.slice(0,10)<filterDate)m.result=null;}));return clone;});}
 function filters(){return `<div class="filters"><label>Toernooi<select id="filter-tournament"><option value="">Alle toernooien</option>${state.tournaments.map(t=>`<option value="${t.id}" ${filterTournament===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label><label>Resultaten vanaf<input id="filter-date" type="date" value="${filterDate}"></label><button class="subtle" data-action="clear-filter">Filters wissen</button></div>`;}
 function archiveRows(ms){return ms.length?`<div class="table-wrap"><table><thead><tr><th>Wedstrijd</th><th>Uitslag</th><th>Toernooi / ronde</th><th>Datum</th></tr></thead><tbody>${ms.map(m=>`<tr data-match="${m.tournament.id}|${m.round}|${m.tournament.rounds[m.round].findIndex(x=>x.id===m.id)}"><td>${badge(name(m.tournament,m.teams[0]),m.teams[0])} ${esc(name(m.tournament,m.teams[0]))} <span class="muted">tegen</span> ${badge(name(m.tournament,m.teams[1]),m.teams[1])} ${esc(name(m.tournament,m.teams[1]))}<small>${m.result.goals.map(g=>`${g.kind==='player'?esc((m.tournament.version.players.find(p=>p.id===g.playerId)?.displayName||m.tournament.version.players.find(p=>p.id===g.playerId)?.name)):g.kind==='own'?'Eigen doelpunt':'Onbekend'} (${g.count})`).join(' · ')||'Doelpuntenmakers nog niet ingevuld'}</small></td><td><b class="score">${m.result.score.join(' – ')}</b>${m.result.penalties?'<small>Strafschoppen '+m.result.penalties.join(' – ')+'</small>':''}</td><td>${esc(m.tournament.name)}<small>${roundName(m.tournament,m.round)}</small></td><td>${date(m.result.date)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="quiet">Nog geen wedstrijden in deze selectie.</div>';}
+function venueResults({homeWins,awayWins}){
+ return `<section aria-labelledby="venue-results-heading">
+  <h2 id="venue-results-heading">Thuis- en uitzeges</h2>
+  <dl class="metrics venue-results">
+   <div class="metric"><dt>Thuiszeges</dt><dd><strong>${homeWins}</strong></dd></div>
+   <div class="metric"><dt>Uitzeges</dt><dd><strong>${awayWins}</strong></dd></div>
+  </dl>
+ </section>`;
+}
 function rankings(){
  const buttons = statsSections.map(([id, label]) =>
   `<button type="button" data-stats-section="${id}" aria-pressed="${id === statsSection}" aria-controls="stats-content">${label}</button>`
@@ -59,6 +69,8 @@ function rankings(){
 function renderStatsSection(){
  const s = stats(filtered());
  switch (statsSection) {
+ case 'venue':
+  return venueResults(s);
  case 'teams':
   return `<div class="section-title"><h2>Teams</h2><label>Sorteer op <select id="sort">${[['titles','Titels'],['finals','Finales'],['wins','Gewonnen'],['gf','Goals voor'],['entries','Deelnames'],['played','Gespeeld'],['ga','Goals tegen'],['difference','Doelsaldo']].map(([v,l])=>`<option value="${v}" ${sort===v?'selected':''}>${l}</option>`).join('')}</select></label></div>
    <div class="table-wrap"><table>
