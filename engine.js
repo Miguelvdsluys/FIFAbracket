@@ -122,6 +122,50 @@ export function stats(ts){
  addPlayerAppearances(ts,players);
  return {teams:[...teams.values()],players:[...players.values()],duels:[...duels.values()],homeWins,awayWins};
 }
+export function records(tournaments){
+ const teams=new Map();
+ for(const tournament of tournaments){
+  const final=tournament.rounds.at(-1)[0];
+  if(!final.result)continue;
+  const champion=winner(final);
+  for(const id of tournament.teamIds){
+   if(!teams.has(id)){
+    const name=tournament.version.teams.find(team=>team.id===id)?.name||id;
+    teams.set(id,{id,name,tournaments:0,finals:0,titles:0});
+   }
+   const team=teams.get(id);
+   team.tournaments++;
+   if(final.teams.includes(id))team.finals++;
+   if(id===champion)team.titles++;
+  }
+ }
+ const rankRates=field=>[...teams.values()]
+  .filter(team=>team[field]>0)
+  .map(team=>({id:team.id,name:team.name,wins:team.titles,played:team[field]}))
+  .sort((a,b)=>b.wins*a.played-a.wins*b.played||b.played-a.played||a.name.localeCompare(b.name,'nl'));
+ const matchGoals=[],playerGoals=[];
+ for(const match of matches(tournaments)){
+  const isFinal=match.round===match.tournament.rounds.length-1;
+  matchGoals.push({match,isFinal,goals:match.result.score[0]+match.result.score[1]});
+  const scorers=new Map();
+  for(const goal of match.result.goals){
+   if(goal.kind!=='player')continue;
+   const teamId=match.teams[goal.side];
+   const player=match.tournament.version.players.find(p=>p.id===goal.playerId&&p.teamId===teamId);
+   if(!player)continue;
+   if(!scorers.has(player.id))scorers.set(player.id,{match,isFinal,player,teamId,goals:0});
+   scorers.get(player.id).goals+=goal.count;
+  }
+  playerGoals.push(...scorers.values());
+ }
+ const mostGoals=(a,b)=>b.goals-a.goals||b.match.result.date.localeCompare(a.match.result.date);
+ matchGoals.sort(mostGoals);
+ playerGoals.sort(mostGoals);
+ return {
+  finalRates:rankRates('finals'),tournamentRates:rankRates('tournaments'),
+  matchGoals,playerGoals
+ };
+}
 export function validateVersion(v){
  if(!v.name||!v.source||!v.mode||!v.date||!Array.isArray(v.teams)||!Array.isArray(v.players))throw Error('Versie vereist name, source, mode, date, teams en players.');
  const teamIds=new Set();v.teams.forEach(t=>{if(!t.id||!t.name||teamIds.has(t.id))throw Error('Teams vereisen unieke id en name.');teamIds.add(t.id);});

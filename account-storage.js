@@ -1,4 +1,4 @@
-import { DEFAULT_CATALOG_ID } from './catalog.js?v=6d82bb5ca9647997';
+import { DEFAULT_CATALOG_ID } from './catalog.js?v=d9a46d036c918de8';
 
 const chunkSize = 700_000;
 const maxChunks = 8;

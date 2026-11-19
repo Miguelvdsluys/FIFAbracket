@@ -1,10 +1,10 @@
-import {installPersonalData} from './personal-data.js?v=6d82bb5ca9647997';
-import {installTeamDrag} from './team-drag.js?v=6d82bb5ca9647997';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=6d82bb5ca9647997';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=6d82bb5ca9647997';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=6d82bb5ca9647997';
-import {planImport} from './transfer.js?v=6d82bb5ca9647997';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=6d82bb5ca9647997';
+import {installPersonalData} from './personal-data.js?v=d9a46d036c918de8';
+import {installTeamDrag} from './team-drag.js?v=d9a46d036c918de8';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=d9a46d036c918de8';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=d9a46d036c918de8';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=d9a46d036c918de8';
+import {planImport} from './transfer.js?v=d9a46d036c918de8';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,records} from './engine.js?v=d9a46d036c918de8';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -29,10 +29,19 @@ const statsSections = [
  ['teams', 'Teams'],
  ['scorers', 'Topscorers'],
  ['duels', 'Onderlinge duels'],
- ['venue', 'Thuis / uit']
+ ['venue', 'Thuis / uit'],
+ ['records', 'Records']
 ];
 let statsSection = 'teams';
 let scorerView = 'players';
+let recordCategory = 'finalRates';
+let recordSubject = 'matches';
+const recordCategories = [
+ ['finalRates','Hoogste percentage gewonnen finales'],
+ ['tournamentRates','Hoogste percentage gewonnen toernooien'],
+ ['matches','Meeste doelpunten in één wedstrijd'],
+ ['finals','Meeste doelpunten in één finale']
+];
 let defaultCatalog;
 try{defaultCatalog=await loadBuiltInCatalog(state);state=withDefaultCatalog(state,defaultCatalog);}catch(error){document.querySelector('#app').innerHTML='<div class="empty"><h2>Teams laden lukt nog niet</h2><p>Controleer je verbinding en open de app opnieuw.</p><button onclick="location.reload()">Opnieuw proberen</button></div>';throw error;}
 const mobileRounds={},bracketViews={},bracketZoom={},bracketScroll={};
@@ -151,8 +160,45 @@ function openNationality(code){
   <tbody>${players.map(player=>`<tr><td>${scorerLabel(player)}</td><td class="lime">${player.goals}</td></tr>`).join('')}</tbody>
   </table></div>`);
 }
+function recordTable(headers,rows){
+ return rows.length?`<div class="table-wrap"><table>
+  <thead><tr>${headers.map(header=>`<th scope="col">${header}</th>`).join('')}</tr></thead>
+  <tbody>${rows.join('')}</tbody>
+ </table></div>`:'<div class="quiet">Nog geen resultaten voor dit record in deze selectie.</div>';
+}
+function renderRecords(tournaments){
+ const data=records(tournaments);
+ const rates=data[recordCategory];
+ const byPlayer=recordSubject==='players';
+ const selection=`<div class="filters">
+  <label>Record<select id="record-category">${recordCategories.map(([value,label])=>`<option value="${value}" ${recordCategory===value?'selected':''}>${label}</option>`).join('')}</select></label>
+  ${rates?'':`<label>Doelpunten<select id="record-subject"><option value="matches" ${byPlayer?'':'selected'}>Beide teams samen</option><option value="players" ${byPlayer?'selected':''}>Per speler</option></select></label>`}
+ </div>`;
+ if(rates){
+  const percentage=new Intl.NumberFormat('nl-NL',{style:'percent',maximumFractionDigits:1});
+  const rows=rates.map((team,index)=>`<tr>
+   <td><span class="rank">${index+1}</span>${badge(team.name,team.id)} ${esc(team.name)}</td>
+   <td class="lime">${percentage.format(team.wins/team.played)}</td><td>${team.wins} / ${team.played}</td>
+  </tr>`);
+  return selection+'<p class="muted">Alleen gespeelde finales en afgeronde toernooien tellen mee.</p>'
+   +recordTable(['TEAM','WINSTPERCENTAGE','GEWONNEN / TOTAAL'],rows);
+ }
+ const goals=(byPlayer?data.playerGoals:data.matchGoals).filter(row=>recordCategory!=='finals'||row.isFinal);
+ const rows=goals.map(({match,player,teamId,goals},index)=>{
+  const t=match.tournament;
+  const team=t.version.teams.find(candidate=>candidate.id===teamId);
+  const sides=match.teams.map(id=>esc(name(t,id))).join(' – ');
+  return `<tr>${byPlayer?`<td><span class="rank">${index+1}</span>${scorerLabel(player,team)}</td>`:''}
+   <td>${byPlayer?'':`<span class="rank">${index+1}</span>`}${sides}<small>${esc(t.name)} · ${roundName(t,match.round)}</small></td>
+   <td>${match.result.score.join(' – ')}</td><td class="lime">${goals}</td></tr>`;
+ });
+ return selection+'<p class="muted">Doelpunten uit strafschoppenseries tellen niet mee.</p>'
+  +recordTable([...(byPlayer?['SPELER']:[]),'WEDSTRIJD','UITSLAG','GOALS'],rows);
+}
 function renderStatsSection(){
- const s = stats(filtered());
+ const tournaments=filtered();
+ if(statsSection==='records')return renderRecords(tournaments);
+ const s=stats(tournaments);
  switch (statsSection) {
  case 'venue':
   return venueResults(s);
@@ -312,7 +358,14 @@ document.addEventListener('click',async e=>{const slot=e.target.closest('[data-e
  (buttons[Math.min(index,buttons.length-1)]||$('#goal-side')).focus();
 }if(b.dataset.goalKind)addGoal(b.dataset.goalKind,b.dataset.goalPlayer??null);if(b.dataset.action==='start'){state.tournaments.push(draft.preview);await persist();selected=draft.preview.id;$('#modal').close();location.hash='tournaments';render();notify('Toernooi gestart. Succes!');}if(b.dataset.action==='redo')wizardStep(3);if(b.dataset.step)wizardStep(Number(b.dataset.step));if(b.dataset.count){draft.count=Number(b.dataset.count);wizardStep(2);}if(b.dataset.delete)confirmDeletion(b.dataset.delete);}catch(err){notify(err.message);}});
 document.addEventListener('submit',async e=>{e.preventDefault();try{const f=e.target;if(f.id==='name-form'){draft.name=f.elements.name.value.trim();if(!draft.name)throw Error('Geef je toernooi een naam.');wizardStep(2);}if(f.id==='count-form'){const count=Number(f.elements.count.value);if(!Number.isInteger(count)||count<2||count>32)throw Error('Kies 2 tot en met 32 teams.');draft.count=count;draft.ids=draft.ids.slice(0,count);wizardStep(3);}if(f.id==='new-form'){const count=draft.count;if(draft.ids.length<2||draft.ids.length>count)throw Error('Kies minimaal twee teams om te starten.');draft.method=f.elements.method.value;draft.preview=createTournament(draft.name,defaultCatalog,draft.ids,draft.method==='random',draft.count);const t=draft.preview;modal('Jouw speelschema',`<p>${esc(t.name)} · ${t.teamIds.length}/${t.teamCount} teams ingevuld · ${t.rounds[0].filter(m=>m.bye).length} vrijstellingen</p>${t.rounds[0].map(m=>`<div class="goal-row">${m.teams[0]?badge(name(t,m.teams[0]),m.teams[0]):''}${esc(name(t,m.teams[0]))} <b>${m.bye?'→ direct door':'tegen'}</b> ${m.bye?'':esc(name(t,m.teams[1]))}</div>`).join('')}<div class="notice">Je kunt direct spelen. Lege plekken kun je later invullen door erop te tikken. Een vrijstelling betekent direct door naar de volgende ronde.</div><button class="subtle" data-action="redo">Opnieuw samenstellen</button> <button class="primary" data-action="start">Start toernooi →</button>`);}if(f.id==='result-form'){const {tid,r,i,goals}=draft.match,t=state.tournaments.find(t=>t.id===tid);const result={score:[Number(f.elements.score0.value),Number(f.elements.score1.value)],penalties:!$('#penalty-fields').hidden&&f.elements.pen0.value!==''&&f.elements.pen1.value!==''?[Number(f.elements.pen0.value),Number(f.elements.pen1.value)]:null,goals,date:t.rounds[r][i].result?.date};let outcome=saveResult(t,r,i,result);if(outcome.needsConfirmation){const text=outcome.needsConfirmation.map(m=>m.teams.map(id=>name(t,id)).join(' – ')).join('\n');if(!confirm('De winnaar verandert. Deze vervolguitslagen worden teruggezet:\n'+text+'\nDoorgaan?'))return;saveResult(t,r,i,result,true);}await persist();$('#modal').close();render();notify('Uitslag opgeslagen. Schema en statistieken bijgewerkt.');}}catch(err){notify(err.message);}});
-document.addEventListener('change',async e=>{try{if(['league','country','type'].includes(e.target.id))updatePicker();if(e.target.id==='entry-type')updateEntryPicker();if(e.target.id==='goal-side'){$('#player-search').value='';goalOptions();}if(e.target.id==='filter-tournament'){filterTournament=e.target.value;render();}if(e.target.id==='filter-date'){filterDate=e.target.value;render();}if(e.target.id==='sort'){sort=e.target.value;render();}if(e.target.id==='round-select')mobileRounds[selected]=Number(e.target.value);if(e.target.id==='round-select')document.querySelectorAll('.bracket-round').forEach(el=>el.classList.toggle('mobile-selected',el.dataset.round===e.target.value));}catch(err){notify(err.message);}});
+document.addEventListener('change',async e=>{try{if(e.target.id==='record-category'||e.target.id==='record-subject'){
+ const id=e.target.id;
+ if(id==='record-category')recordCategory=e.target.value;
+ else recordSubject=e.target.value;
+ $('#stats-content').innerHTML=renderStatsSection();
+ $(`#${id}`).focus();
+ return;
+}if(['league','country','type'].includes(e.target.id))updatePicker();if(e.target.id==='entry-type')updateEntryPicker();if(e.target.id==='goal-side'){$('#player-search').value='';goalOptions();}if(e.target.id==='filter-tournament'){filterTournament=e.target.value;render();}if(e.target.id==='filter-date'){filterDate=e.target.value;render();}if(e.target.id==='sort'){sort=e.target.value;render();}if(e.target.id==='round-select')mobileRounds[selected]=Number(e.target.value);if(e.target.id==='round-select')document.querySelectorAll('.bracket-round').forEach(el=>el.classList.toggle('mobile-selected',el.dataset.round===e.target.value));}catch(err){notify(err.message);}});
 document.addEventListener('input',e=>{if(e.target.id==='entry-search')updateEntryPicker();if(e.target.id==='team-search')updatePicker();if(e.target.id==='player-search')goalOptions();if(e.target.name?.startsWith('score'))drawGoals();});
 $('#catalog-button').onclick=catalog;window.addEventListener('hashchange',render);render();
 
