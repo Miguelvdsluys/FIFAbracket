@@ -1,30 +1,10 @@
-import {installPersonalData} from './personal-data.js?v=19da33637738c554';
-import {installTeamDrag} from './team-drag.js?v=19da33637738c554';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=19da33637738c554';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=19da33637738c554';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=19da33637738c554';
-import {planImport} from './transfer.js?v=19da33637738c554';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=19da33637738c554';
-let storage, initialState;
-try {
- storage=await initializeStorage();
- initialState=storage.state??await loadState();
-} catch(error) {
- const app=document.querySelector('#app');
- app.innerHTML='<div class="empty"><h2>Toernooien laden lukt niet</h2><p>Controleer je internetverbinding om je accounttoernooien te openen.</p><button class="primary" type="button">Opnieuw proberen</button></div>';
- app.querySelector('button').onclick=()=>location.reload();
- throw error;
-}
-if(storage==='unavailable'){
- const notice=document.querySelector('#sync-notice');
- notice.hidden=false;
- notice.textContent='Accountopslag is nog niet beschikbaar. Toernooien worden op dit apparaat opgeslagen.';
-}
-if(storage.state){
- document.documentElement.dataset.accountStorage='true';
- document.querySelector('#storage-label').textContent='Opgeslagen in je account';
-}
-let state=initialState,page='dashboard',selected=null,filterTournament='',filterDate='',sort='titles';
+import {installPersonalData} from './personal-data.js?v=a9a4fb92c50d6401';
+import {installTeamDrag} from './team-drag.js?v=a9a4fb92c50d6401';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=a9a4fb92c50d6401';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=a9a4fb92c50d6401';
+import {loadState,saveState} from './storage.js?v=a9a4fb92c50d6401';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=a9a4fb92c50d6401';
+let state=await loadState(),page='dashboard',selected=null,filterTournament='',filterDate='',sort='titles';
 const statsSections = [
  ['teams', 'Teams'],
  ['scorers', 'Topscorers'],
@@ -42,22 +22,12 @@ const initials=n=>n.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
 const teamNames=new Map(defaultCatalog.teams.map(t=>[t.name,t])),teamIds=new Map(defaultCatalog.teams.map(t=>[t.id,t]));
 const catalogScorers = new Map(defaultCatalog.players.filter(player => player.flagCode).map(player => [player.id, player]));
 const flagSprite = new URL('./data/nationality-flags.svg', import.meta.url).href;
-const subdivisionFlags = {'gb-eng': 'gbeng', 'gb-nir': 'gbnir', 'gb-sct': 'gbsct', 'gb-wls': 'gbwls'};
-function scorerLabel(player, team, textOnly = false){
+function scorerLabel(player, team){
  const source = catalogScorers.get(player?.id);
  const club = source?.clubName || (team?.type === 'club' ? team.name : '');
  const label = esc(player?.displayName || player?.name || 'Onbekende doelpuntenmaker') + (club ? ` (${esc(club)})` : '');
  if (!source) return label;
  const {flagCode, nationality} = source;
- if (textOnly) {
-  const subdivision = subdivisionFlags[flagCode];
-  const emoji = subdivision
-   ? '🏴' + String.fromCodePoint(...Array.from(subdivision, letter => 0xE0000 + letter.charCodeAt(0)), 0xE007F)
-   : /^[a-z]{2}$/.test(flagCode)
-    ? String.fromCodePoint(...Array.from(flagCode, letter => 0x1F1E6 + letter.charCodeAt(0) - 97))
-    : '';
-  return emoji ? `${emoji} ${label}` : label;
- }
  return `<svg class="scorer-flag" role="img" aria-label="${esc(nationality)}"><use href="${esc(flagSprite)}#flag-${esc(flagCode)}"></use></svg> ${label}`;
 }
 function matchGoalLabel(tournament, match, goal){
@@ -73,16 +43,7 @@ const teamMatches=(team,query)=>[team.name,...team.aliases||[]].some(name=>norma
 const done=t=>!!t.rounds.at(-1)[0].result;
 const roundName=(t,r)=>t.rounds.length-r===1?'Finale':t.rounds.length-r===2?'Halve finale':t.rounds.length-r===3?'Kwartfinale':t.rounds.length-r===4?'Achtste finale':t.rounds.length-r===5?'Zestiende finale':`Ronde ${r+1}`;
 const notify=s=>{$('#toast').textContent=s;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),4500);};
-let confirmedState=structuredClone(state);
-async function persist(){
- try{state.revision=await saveState(state);confirmedState=structuredClone(state);}
- catch(error){
-  try{state=withDefaultCatalog(await loadState(),defaultCatalog);confirmedState=structuredClone(state);}
-  catch{state=structuredClone(confirmedState);}
-  render();
-  throw error;
- }
-}
+async function persist(){try{state.revision=await saveState(state);}catch(error){state=withDefaultCatalog(await loadState(),defaultCatalog);render();throw error;}}
 function modal(title,body){$('#dialog-content').innerHTML=`<div class="modal-head"><h2>${title}</h2><button data-close aria-label="Sluiten">×</button></div>${body}`;$('#modal').classList.toggle('team-picker-modal',body.includes('id="team-picker"')||body.includes('id="entry-picker"')||body.includes('id="team-manager"'));if(!$('#modal').open)$('#modal').showModal();}
 const empty=(title,text,button='Nieuw toernooi',action='new')=>`<div class="empty"><span class="empty-symbol">⌘</span><h3>${title}</h3><p>${text}</p><button class="primary" data-action="${action}">${button} ↗</button></div>`;
 const title=(eyebrow,h,sub,button=true)=>`<div class="page-title"><div><div class="eyebrow">${eyebrow}</div><h1>${h}</h1><p>${sub}</p></div>${button?'<div class="title-actions"><button class="mobile-catalog subtle" data-action="catalog" aria-label="Teamcatalogus beheren">⚙</button><button class="primary" data-action="new">＋ Nieuw toernooi</button></div>':''}</div>`;
@@ -201,9 +162,43 @@ function confirmDeletion(tid){
  modal('Toernooi verwijderen',`<p>Wil je <b>${esc(t.name)}</b> verwijderen, inclusief ${matches([t]).length} opgeslagen uitslagen?</p><p>De bijbehorende goals en resultaten verdwijnen ook uit de statistieken.</p><div class="delete-actions"><button data-close>Annuleren</button><button class="danger" data-confirm-delete="${t.id}">Toernooi verwijderen</button></div>`);
 }
 
-function openMatch(tid,r,i){const t=state.tournaments.find(t=>t.id===tid),m=t.rounds[r][i];if(r===0&&m.teams.some((id,side)=>!id&&!(m.bye&&side===1))){openAddTeams(tid,i,m.teams.findIndex((id,side)=>!id&&!(m.bye&&side===1)));return;}if(m.bye){modal('Vrijstelling',`<p>${esc(name(t,m.teams[0]))} gaat direct door. Dit telt niet als gespeelde of gewonnen wedstrijd.</p>`);return;}if(!m.teams.every(Boolean)){notify('Speel eerst de voorgaande wedstrijden.');return;}draft.match={tid,r,i,goals:structuredClone(m.result?.goals||[])};modal(roundName(t,r),`<div class="eyebrow">${esc(t.name)}</div><form id="result-form"><div class="score-entry">${m.teams.map((id,s)=>`<label>${badge(name(t,id))}<b>${esc(name(t,id))}</b><input type="number" inputmode="numeric" min="0" max="999" required name="score${s}" value="${m.result?.score[s]??0}" aria-label="Score ${esc(name(t,id))}"></label>`).join('<span>:</span>')}</div><div class="notice">Eindstand inclusief verlenging.</div><div class="match-team-actions">${m.teams.map(id=>{const pos=teamPosition(t,id);return `<button type="button" class="subtle" data-edit-seed="${t.id}|${pos.index}|${pos.side}">⇄ ${esc(name(t,id))} wijzigen</button>`;}).join('')}</div><button type="button" class="subtle penalty-toggle" data-toggle-penalties aria-expanded="${!!m.result?.penalties}">${m.result?.penalties?'−':'＋'} Strafschoppenserie</button><div id="penalty-fields" class="form-grid" ${m.result?.penalties?'':'hidden'}><label>Strafschoppen ${esc(name(t,m.teams[0]))}<input name="pen0" type="number" inputmode="numeric" min="0" max="999" value="${m.result?.penalties?.[0]??''}"></label><label>Strafschoppen ${esc(name(t,m.teams[1]))}<input name="pen1" type="number" inputmode="numeric" min="0" max="999" value="${m.result?.penalties?.[1]??''}"></label></div>${m.teams.some(id=>t.version.teams.find(team=>team.id===id)?.rosterStatus==='unverified')?'<div class="notice">De speciale FIFA 22-selectie is nog niet geverifieerd. Je kunt goals voorlopig als onbekend opslaan.</div>':''}<h3>Doelpuntenmakers</h3><p>Niet toegewezen goals mogen later worden aangevuld. Eigen goals worden bij het ontvangende team geregistreerd en tellen niet voor een speler.</p><div id="goals-list"></div><div class="goal-add"><label>Team<select id="goal-side">${m.teams.map((id,s)=>`<option value="${s}">${esc(name(t,id))}</option>`).join('')}</select></label><label>Zoek speler<input id="player-search" placeholder="Naam speler"></label><label>Doelpuntenmaker<select id="goal-player"></select></label><label>Aantal<input id="goal-count" type="number" inputmode="numeric" min="1" max="999" value="1"></label><button type="button" data-action="add-goal">＋ Toevoegen</button></div><div id="goals-remaining" class="notice"></div><button class="primary">${m.result?'Correctie bevestigen':'Uitslag bevestigen'} →</button></form>`);goalOptions();drawGoals();}
-function goalOptions(){const {tid,r,i}=draft.match,t=state.tournaments.find(t=>t.id===tid),teamId=t.rounds[r][i].teams[Number($('#goal-side').value)];$('#goal-player').innerHTML='<option value="unknown">Onbekende doelpuntenmaker</option><option value="own">Eigen doelpunt tegenstander</option>'+t.version.players.filter(p=>p.teamId===teamId&&[p.name,p.displayName,p.shortName].filter(Boolean).some(name=>normalizeSearch(name).includes(normalizeSearch($('#player-search').value)))).map(p=>`<option value="player:${esc(p.id)}">${scorerLabel(p,t.version.teams.find(team=>team.id===teamId),true)}${p.manual?' · handmatig':''}</option>`).join('');}
-function drawGoals(){const {tid,r,i,goals}=draft.match,t=state.tournaments.find(t=>t.id===tid),m=t.rounds[r][i];$('#goals-list').innerHTML=goals.map((g,index)=>`<div class="goal-row">${esc(name(t,m.teams[g.side]))} · ${matchGoalLabel(t,m,g)} <b>× ${g.count}</b><button type="button" data-remove-goal="${index}" aria-label="Doelpunt verwijderen">×</button></div>`).join('');$('#goals-remaining').textContent=[0,1].map(s=>`${name(t,m.teams[s])}: ${Number($('#result-form').elements['score'+s].value)-goals.filter(g=>g.side===s).reduce((a,g)=>a+g.count,0)} goals nog toe te wijzen`).join(' · ');}
+function openMatch(tid,r,i){const t=state.tournaments.find(t=>t.id===tid),m=t.rounds[r][i];if(r===0&&m.teams.some((id,side)=>!id&&!(m.bye&&side===1))){openAddTeams(tid,i,m.teams.findIndex((id,side)=>!id&&!(m.bye&&side===1)));return;}if(m.bye){modal('Vrijstelling',`<p>${esc(name(t,m.teams[0]))} gaat direct door. Dit telt niet als gespeelde of gewonnen wedstrijd.</p>`);return;}if(!m.teams.every(Boolean)){notify('Speel eerst de voorgaande wedstrijden.');return;}draft.match={tid,r,i,goals:structuredClone(m.result?.goals||[])};modal(roundName(t,r),`<div class="eyebrow">${esc(t.name)}</div><form id="result-form"><div class="score-entry">${m.teams.map((id,s)=>`<label>${badge(name(t,id))}<b>${esc(name(t,id))}</b><input type="number" inputmode="numeric" min="0" max="999" required name="score${s}" value="${m.result?.score[s]??0}" aria-label="Score ${esc(name(t,id))}"></label>`).join('<span>:</span>')}</div><div class="notice">Eindstand inclusief verlenging.</div><div class="match-team-actions">${m.teams.map(id=>{const pos=teamPosition(t,id);return `<button type="button" class="subtle" data-edit-seed="${t.id}|${pos.index}|${pos.side}">⇄ ${esc(name(t,id))} wijzigen</button>`;}).join('')}</div><button type="button" class="subtle penalty-toggle" data-toggle-penalties aria-expanded="${!!m.result?.penalties}">${m.result?.penalties?'−':'＋'} Strafschoppenserie</button><div id="penalty-fields" class="form-grid" ${m.result?.penalties?'':'hidden'}><label>Strafschoppen ${esc(name(t,m.teams[0]))}<input name="pen0" type="number" inputmode="numeric" min="0" max="999" value="${m.result?.penalties?.[0]??''}"></label><label>Strafschoppen ${esc(name(t,m.teams[1]))}<input name="pen1" type="number" inputmode="numeric" min="0" max="999" value="${m.result?.penalties?.[1]??''}"></label></div>${m.teams.some(id=>t.version.teams.find(team=>team.id===id)?.rosterStatus==='unverified')?'<div class="notice">De speciale FIFA 22-selectie is nog niet geverifieerd. Je kunt goals voorlopig als onbekend opslaan.</div>':''}<h3>Doelpuntenmakers</h3><p>Vul de eindstand in en tik op een speler om één doelpunt toe te wijzen.</p><div id="goals-list"></div><div class="goal-add"><label>Team<select id="goal-side">${m.teams.map((id,s)=>`<option value="${s}">${esc(name(t,id))}</option>`).join('')}</select></label><label>Zoek speler<input id="player-search" type="search" placeholder="Naam speler"></label></div><div id="goals-remaining" class="notice" role="status"></div><div id="goal-players" class="goal-players" role="group" aria-label="Spelers"></div><div class="goal-extras"><button type="button" class="subtle" data-goal-kind="unknown">＋ Onbekend</button><button type="button" class="subtle" data-goal-kind="own" aria-label="Eigen doelpunt van de tegenstander toevoegen">＋ Eigen doelpunt tegenstander</button></div><button class="primary">${m.result?'Correctie bevestigen':'Uitslag bevestigen'} →</button></form>`);goalOptions();drawGoals();}
+function goalOptions(){
+ const {tid,r,i}=draft.match,t=state.tournaments.find(t=>t.id===tid);
+ const teamId=t.rounds[r][i].teams[Number($('#goal-side').value)];
+ const team=t.version.teams.find(team=>team.id===teamId);
+ const query=normalizeSearch($('#player-search').value);
+ const players=t.version.players.filter(p=>p.teamId===teamId&&[p.name,p.displayName,p.shortName].some(n=>normalizeSearch(n).includes(query)));
+ const list=$('#goal-players');
+ list.innerHTML=players.map(p=>`<button type="button" data-goal-kind="player" data-goal-player="${esc(p.id)}"><span>${scorerLabel(p,team)}</span><span aria-hidden="true">＋</span></button>`).join('')
+  || '<p class="muted">Geen spelers gevonden.</p>';
+ list.scrollTop=0;
+}
+function remainingGoals(side){
+ const input=$('#result-form').elements['score'+side];
+ const assigned=draft.match.goals.filter(goal=>goal.side===side).reduce((sum,goal)=>sum+goal.count,0);
+ return (Number.isNaN(input.valueAsNumber)?0:input.valueAsNumber)-assigned;
+}
+function addGoal(kind,playerId){
+ const side=Number($('#goal-side').value);
+ if(remainingGoals(side)<1){
+  notify('Vul een hogere score in of verwijder een toegewezen doelpunt.');
+  return;
+ }
+ const goals=draft.match.goals;
+ const existing=goals.find(goal=>goal.side===side&&goal.kind===kind&&goal.playerId===playerId);
+ if(existing)existing.count++;
+ else goals.push({side,kind,playerId,count:1});
+ drawGoals();
+}
+function drawGoals(){
+ const {tid,r,i,goals}=draft.match,t=state.tournaments.find(t=>t.id===tid),m=t.rounds[r][i];
+ $('#goals-list').innerHTML=goals.map((g,index)=>`<div class="goal-row"><span>${esc(name(t,m.teams[g.side]))} · ${matchGoalLabel(t,m,g)}</span><b>× ${g.count}</b><button type="button" data-remove-goal="${index}" aria-label="Eén doelpunt verwijderen">−</button></div>`).join('');
+ $('#goals-remaining').textContent=m.teams.map((id,side)=>{
+  const remaining=remainingGoals(side);
+  return `${name(t,id)}: ${remaining<0?`${-remaining} te veel toegewezen`:`${remaining} nog toe te wijzen`}`;
+ }).join(' · ');
+}
 function profile(kind,id){const ts=filtered(),s=stats(ts);if(kind==='team'){const x=s.teams.find(x=>x.id===id);const ms=matches(ts).filter(m=>m.teams.includes(id));const scorers=s.players.filter(p=>p.teams[id]).sort((a,b)=>b.teams[id]-a.teams[id]);modal(esc(x.name),`<p>${x.entries} deelnames · ${x.wins} zeges · ${x.finals} finales · ${x.titles} titels</p><h3>Beste resultaat per toernooi</h3>${ts.filter(t=>t.teamIds.includes(id)).map(t=>{let best=0;t.rounds.forEach((round,r)=>{if(round.some(m=>m.teams.includes(id)))best=r;});return `<p>${esc(t.name)}: ${done(t)&&winner(t.rounds.at(-1)[0])===id?'Kampioen':roundName(t,best)}</p>`;}).join('')}<h3>Eigen topscorers</h3>${scorers.map(p=>`<p>${scorerLabel(p,teamIds.get(id))} · ${p.teams[id]} goals</p>`).join('')||'<p>Nog geen toegewezen goals.</p>'}${archiveRows(ms)}`);}else if(kind==='player'){const p=s.players.find(x=>x.id===id);modal(esc(p.name),`<p>${p.goals} goals in ${p.matchIds.size} wedstrijden</p><h3>Per team</h3>${Object.entries(p.teams).map(([id,n])=>`<p>${esc(s.teams.find(t=>t.id===id)?.name)}: ${n}</p>`).join('')}<h3>Per toernooi</h3>${Object.entries(p.tournaments).map(([id,n])=>`<p>${esc(ts.find(t=>t.id===id)?.name)}: ${n}</p>`).join('')}${archiveRows(matches(ts).filter(m=>p.matchIds.has(m.id)))}`);}else{const d=s.duels[Number(id)];modal('Onderlinge duels',archiveRows(d.matches));}}
 $('#app').addEventListener('click', event => {
  const button = event.target.closest('[data-stats-section]');
@@ -213,42 +208,18 @@ $('#app').addEventListener('click', event => {
  button.setAttribute('aria-pressed', 'true');
  $('#stats-content').innerHTML = renderStatsSection();
 });
-document.addEventListener('click',async e=>{const slot=e.target.closest('[data-empty-slot]');if(slot){const [tid,index,side]=slot.dataset.emptySlot.split('|');openAddTeams(tid,Number(index),Number(side));return;}const b=e.target.closest('button,a,tr');if(!b)return;try{if(b.dataset.manageTeams)openTeamManager(b.dataset.manageTeams);if(b.dataset.editSeed){const [tid,index,side]=b.dataset.editSeed.split('|');const t=state.tournaments.find(t=>t.id===tid);if(t.rounds[0][Number(index)].teams[Number(side)])openTeamChoice(tid,Number(index),Number(side),'edit');else openAddTeams(tid,Number(index),Number(side));}if(b.dataset.changeTeam){const {tid,index,side}=draft.teamEntry;await applyTeamEdit(tid,index,side,b.dataset.changeTeam);}if(b.hasAttribute('data-toggle-penalties')){const fields=$('#penalty-fields');fields.hidden=!fields.hidden;if(fields.hidden)fields.querySelectorAll('input').forEach(input=>input.value='');b.setAttribute('aria-expanded',String(!fields.hidden));b.textContent=(fields.hidden?'＋':'−')+' Strafschoppenserie';}if(b.dataset.confirmDelete){const tid=b.dataset.confirmDelete;state.tournaments=state.tournaments.filter(t=>t.id!==tid);await persist();if(selected===tid)selected=null;if(filterTournament===tid)filterTournament='';$('#modal').close();render();notify('Toernooi verwijderd.');}if(b.hasAttribute('data-bracket-menu')){const toolbar=$('.bracket-toolbar');const open=toolbar.classList.toggle('options-open');b.setAttribute('aria-expanded',String(open));}if(b.hasAttribute('data-toggle-overview')){const canvas=$('.tree-canvas');if(Number(canvas.dataset.zoom)<.9){bracketZoom[selected]=1;}else{bracketZoom[selected]=Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height));}bracketScroll[selected]={left:0,top:0};setupBracket();}if(b.hasAttribute('data-toggle-focus')){bracketFocus=!bracketFocus;render();}if(b.dataset.fillTeams)openAddTeams(b.dataset.fillTeams);if(b.dataset.addTeam){const {tid,index,side}=draft.teamEntry;const t=state.tournaments.find(t=>t.id===tid);addTeam(t,b.dataset.addTeam,index,side,teamCatalog(t));await persist();render();if(openTeamSlots(t).length)openAddTeams(tid);else{$('#modal').close();notify('Alle teams zijn ingevuld.');}}if(b.dataset.bracketView){bracketViews[selected]=b.dataset.bracketView;render();}if(b.dataset.treeZoom){const canvas=$('.tree-canvas');const zoom=Number(canvas.dataset.zoom);if(b.dataset.treeZoom==='fit')bracketScroll[selected]={left:0,top:0};bracketZoom[selected]=b.dataset.treeZoom==='fit'?Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height)):Math.max(.2,Math.min(1.5,zoom+(b.dataset.treeZoom==='in'?.15:-.15)));setupBracket();}if(b.hasAttribute('data-close'))$('#modal').close();if(b.dataset.action==='new')newTournament();if(b.dataset.action==='catalog')catalog();if(b.dataset.action==='back'){selected=null;render();}if(b.dataset.action==='clear-filter'){filterTournament='';filterDate='';render();}if(b.dataset.tournament){bracketFocus=true;selected=b.dataset.tournament;location.hash='tournaments';render();}if(b.dataset.match){const [tid,r,i]=b.dataset.match.split('|');openMatch(tid,Number(r),Number(i));}if(b.dataset.team)profile('team',b.dataset.team);if(b.dataset.player)profile('player',b.dataset.player);if(b.dataset.duel!==undefined)profile('duel',b.dataset.duel);if(b.dataset.pick){const id=b.dataset.pick,index=draft.ids.indexOf(id);if(index>=0)draft.ids.splice(index,1);else if(draft.ids.length<draft.count)draft.ids.push(id);else notify('Alle plekken zijn gevuld.');if(index<0&&$('#team-search'))$('#team-search').value='';updatePicker();}if(b.dataset.removeGoal!==undefined){draft.match.goals.splice(Number(b.dataset.removeGoal),1);drawGoals();}if(b.dataset.action==='add-goal'){const value=$('#goal-player').value,count=Number($('#goal-count').value);if(!Number.isInteger(count)||count<1)throw Error('Vul een geldig aantal in.');draft.match.goals.push({side:Number($('#goal-side').value),kind:value.startsWith('player:')?'player':value,playerId:value.startsWith('player:')?value.slice(7):null,count});drawGoals();}if(b.dataset.action==='start'){state.tournaments.push(draft.preview);await persist();selected=draft.preview.id;$('#modal').close();location.hash='tournaments';render();notify('Toernooi gestart. Succes!');}if(b.dataset.action==='redo')wizardStep(3);if(b.dataset.step)wizardStep(Number(b.dataset.step));if(b.dataset.count){draft.count=Number(b.dataset.count);wizardStep(2);}if(b.dataset.delete)confirmDeletion(b.dataset.delete);}catch(err){notify(err.message);}});
+document.addEventListener('click',async e=>{const slot=e.target.closest('[data-empty-slot]');if(slot){const [tid,index,side]=slot.dataset.emptySlot.split('|');openAddTeams(tid,Number(index),Number(side));return;}const b=e.target.closest('button,a,tr');if(!b)return;try{if(b.dataset.manageTeams)openTeamManager(b.dataset.manageTeams);if(b.dataset.editSeed){const [tid,index,side]=b.dataset.editSeed.split('|');const t=state.tournaments.find(t=>t.id===tid);if(t.rounds[0][Number(index)].teams[Number(side)])openTeamChoice(tid,Number(index),Number(side),'edit');else openAddTeams(tid,Number(index),Number(side));}if(b.dataset.changeTeam){const {tid,index,side}=draft.teamEntry;await applyTeamEdit(tid,index,side,b.dataset.changeTeam);}if(b.hasAttribute('data-toggle-penalties')){const fields=$('#penalty-fields');fields.hidden=!fields.hidden;if(fields.hidden)fields.querySelectorAll('input').forEach(input=>input.value='');b.setAttribute('aria-expanded',String(!fields.hidden));b.textContent=(fields.hidden?'＋':'−')+' Strafschoppenserie';}if(b.dataset.confirmDelete){const tid=b.dataset.confirmDelete;state.tournaments=state.tournaments.filter(t=>t.id!==tid);await persist();if(selected===tid)selected=null;if(filterTournament===tid)filterTournament='';$('#modal').close();render();notify('Toernooi verwijderd.');}if(b.hasAttribute('data-bracket-menu')){const toolbar=$('.bracket-toolbar');const open=toolbar.classList.toggle('options-open');b.setAttribute('aria-expanded',String(open));}if(b.hasAttribute('data-toggle-overview')){const canvas=$('.tree-canvas');if(Number(canvas.dataset.zoom)<.9){bracketZoom[selected]=1;}else{bracketZoom[selected]=Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height));}bracketScroll[selected]={left:0,top:0};setupBracket();}if(b.hasAttribute('data-toggle-focus')){bracketFocus=!bracketFocus;render();}if(b.dataset.fillTeams)openAddTeams(b.dataset.fillTeams);if(b.dataset.addTeam){const {tid,index,side}=draft.teamEntry;const t=state.tournaments.find(t=>t.id===tid);addTeam(t,b.dataset.addTeam,index,side,teamCatalog(t));await persist();render();if(openTeamSlots(t).length)openAddTeams(tid);else{$('#modal').close();notify('Alle teams zijn ingevuld.');}}if(b.dataset.bracketView){bracketViews[selected]=b.dataset.bracketView;render();}if(b.dataset.treeZoom){const canvas=$('.tree-canvas');const zoom=Number(canvas.dataset.zoom);if(b.dataset.treeZoom==='fit')bracketScroll[selected]={left:0,top:0};bracketZoom[selected]=b.dataset.treeZoom==='fit'?Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height)):Math.max(.2,Math.min(1.5,zoom+(b.dataset.treeZoom==='in'?.15:-.15)));setupBracket();}if(b.hasAttribute('data-close'))$('#modal').close();if(b.dataset.action==='new')newTournament();if(b.dataset.action==='catalog')catalog();if(b.dataset.action==='back'){selected=null;render();}if(b.dataset.action==='clear-filter'){filterTournament='';filterDate='';render();}if(b.dataset.tournament){bracketFocus=true;selected=b.dataset.tournament;location.hash='tournaments';render();}if(b.dataset.match){const [tid,r,i]=b.dataset.match.split('|');openMatch(tid,Number(r),Number(i));}if(b.dataset.team)profile('team',b.dataset.team);if(b.dataset.player)profile('player',b.dataset.player);if(b.dataset.duel!==undefined)profile('duel',b.dataset.duel);if(b.dataset.pick){const id=b.dataset.pick,index=draft.ids.indexOf(id);if(index>=0)draft.ids.splice(index,1);else if(draft.ids.length<draft.count)draft.ids.push(id);else notify('Alle plekken zijn gevuld.');if(index<0&&$('#team-search'))$('#team-search').value='';updatePicker();}if(b.dataset.removeGoal!==undefined){
+ const index=Number(b.dataset.removeGoal),goals=draft.match.goals;
+ if(--goals[index].count===0)goals.splice(index,1);
+ drawGoals();
+ const buttons=$('#goals-list').querySelectorAll('[data-remove-goal]');
+ (buttons[Math.min(index,buttons.length-1)]||$('#goal-side')).focus();
+}if(b.dataset.goalKind)addGoal(b.dataset.goalKind,b.dataset.goalPlayer??null);if(b.dataset.action==='start'){state.tournaments.push(draft.preview);await persist();selected=draft.preview.id;$('#modal').close();location.hash='tournaments';render();notify('Toernooi gestart. Succes!');}if(b.dataset.action==='redo')wizardStep(3);if(b.dataset.step)wizardStep(Number(b.dataset.step));if(b.dataset.count){draft.count=Number(b.dataset.count);wizardStep(2);}if(b.dataset.delete)confirmDeletion(b.dataset.delete);}catch(err){notify(err.message);}});
 document.addEventListener('submit',async e=>{e.preventDefault();try{const f=e.target;if(f.id==='name-form'){draft.name=f.elements.name.value.trim();if(!draft.name)throw Error('Geef je toernooi een naam.');wizardStep(2);}if(f.id==='count-form'){const count=Number(f.elements.count.value);if(!Number.isInteger(count)||count<2||count>32)throw Error('Kies 2 tot en met 32 teams.');draft.count=count;draft.ids=draft.ids.slice(0,count);wizardStep(3);}if(f.id==='new-form'){const count=draft.count;if(draft.ids.length<2||draft.ids.length>count)throw Error('Kies minimaal twee teams om te starten.');draft.method=f.elements.method.value;draft.preview=createTournament(draft.name,defaultCatalog,draft.ids,draft.method==='random',draft.count);const t=draft.preview;modal('Jouw speelschema',`<p>${esc(t.name)} · ${t.teamIds.length}/${t.teamCount} teams ingevuld · ${t.rounds[0].filter(m=>m.bye).length} vrijstellingen</p>${t.rounds[0].map(m=>`<div class="goal-row">${m.teams[0]?badge(name(t,m.teams[0]),m.teams[0]):''}${esc(name(t,m.teams[0]))} <b>${m.bye?'→ direct door':'tegen'}</b> ${m.bye?'':esc(name(t,m.teams[1]))}</div>`).join('')}<div class="notice">Je kunt direct spelen. Lege plekken kun je later invullen door erop te tikken. Een vrijstelling betekent direct door naar de volgende ronde.</div><button class="subtle" data-action="redo">Opnieuw samenstellen</button> <button class="primary" data-action="start">Start toernooi →</button>`);}if(f.id==='result-form'){const {tid,r,i,goals}=draft.match,t=state.tournaments.find(t=>t.id===tid);const result={score:[Number(f.elements.score0.value),Number(f.elements.score1.value)],penalties:!$('#penalty-fields').hidden&&f.elements.pen0.value!==''&&f.elements.pen1.value!==''?[Number(f.elements.pen0.value),Number(f.elements.pen1.value)]:null,goals,date:t.rounds[r][i].result?.date};let outcome=saveResult(t,r,i,result);if(outcome.needsConfirmation){const text=outcome.needsConfirmation.map(m=>m.teams.map(id=>name(t,id)).join(' – ')).join('\n');if(!confirm('De winnaar verandert. Deze vervolguitslagen worden teruggezet:\n'+text+'\nDoorgaan?'))return;saveResult(t,r,i,result,true);}await persist();$('#modal').close();render();notify('Uitslag opgeslagen. Schema en statistieken bijgewerkt.');}}catch(err){notify(err.message);}});
-document.addEventListener('change',async e=>{try{if(['league','country','type'].includes(e.target.id))updatePicker();if(e.target.id==='entry-type')updateEntryPicker();if(e.target.id==='goal-side')goalOptions();if(e.target.id==='filter-tournament'){filterTournament=e.target.value;render();}if(e.target.id==='filter-date'){filterDate=e.target.value;render();}if(e.target.id==='sort'){sort=e.target.value;render();}if(e.target.id==='round-select')mobileRounds[selected]=Number(e.target.value);if(e.target.id==='round-select')document.querySelectorAll('.bracket-round').forEach(el=>el.classList.toggle('mobile-selected',el.dataset.round===e.target.value));}catch(err){notify(err.message);}});
+document.addEventListener('change',async e=>{try{if(['league','country','type'].includes(e.target.id))updatePicker();if(e.target.id==='entry-type')updateEntryPicker();if(e.target.id==='goal-side'){$('#player-search').value='';goalOptions();}if(e.target.id==='filter-tournament'){filterTournament=e.target.value;render();}if(e.target.id==='filter-date'){filterDate=e.target.value;render();}if(e.target.id==='sort'){sort=e.target.value;render();}if(e.target.id==='round-select')mobileRounds[selected]=Number(e.target.value);if(e.target.id==='round-select')document.querySelectorAll('.bracket-round').forEach(el=>el.classList.toggle('mobile-selected',el.dataset.round===e.target.value));}catch(err){notify(err.message);}});
 document.addEventListener('input',e=>{if(e.target.id==='entry-search')updateEntryPicker();if(e.target.id==='team-search')updatePicker();if(e.target.id==='player-search')goalOptions();if(e.target.name?.startsWith('score'))drawGoals();});
 $('#catalog-button').onclick=catalog;window.addEventListener('hashchange',render);render();
 
 installTeamDrag({onDrop:(from,to)=>applyTeamEdit(from.tid,from.index,from.side,{index:to.index,side:to.side}),onError:error=>notify(error.message)});
 
-installPersonalData({getState:()=>state,modal,notify,onApply:async next=>{const restored=withDefaultCatalog(next,defaultCatalog);const revision=await saveState(restored);state={...restored,revision};confirmedState=structuredClone(state);selected=null;filterTournament='';filterDate='';location.hash='tournaments';render();}});
-
-if(storage.state){
- const copyButton=$('#account-import'),copyStatus=$('#account-import-status');
- copyButton.hidden=false;
- copyButton.addEventListener('click',async()=>{
-  copyButton.disabled=true;
-  copyStatus.hidden=false;
-  copyStatus.textContent='Lokale toernooien controleren…';
-  try{
-   const local=await loadLocalState();
-   if(!local.tournaments.length){copyStatus.textContent='Dit apparaat heeft geen lokale toernooien.';return;}
-   if(!confirm('Lokale toernooien naar dit account kopiëren? De lokale exemplaren blijven bewaard.')){
-    copyStatus.textContent='Kopiëren geannuleerd.';return;
-   }
-   const current=withDefaultCatalog(await loadState(),defaultCatalog);
-   const archive={app:'FIFA22BracketTracker',version:1,createdAt:new Date().toISOString(),label:'',state:local};
-   const {state:next,summary}=planImport(current,archive);
-   if(summary.added){
-    next.revision=await saveState(next);
-   }
-   state=summary.added?next:current;
-   confirmedState=structuredClone(state);
-   render();
-   copyStatus.textContent=summary.conflicts.length
-    ? `Gekopieerd: ${summary.added}. Bestaande accountversies behouden: ${summary.conflicts.length}.`
-    : summary.added ? `Gekopieerd: ${summary.added}. Je ziet ze nu ook op andere apparaten.` : 'Deze toernooien staan al in je account.';
-  }catch(error){copyStatus.textContent=error.message||'Kopiëren mislukt. Probeer het opnieuw.';}
-  finally{copyButton.disabled=false;}
- });
-}
+installPersonalData({getState:()=>state,modal,notify,onApply:async next=>{const restored=withDefaultCatalog(next,defaultCatalog);const revision=await saveState(restored);state={...restored,revision};selected=null;filterTournament='';filterDate='';location.hash='tournaments';render();}});
