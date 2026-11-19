@@ -1,4 +1,4 @@
-import {validateVersion} from './engine.js?v=ed29510359be3670';
+import {validateVersion} from './engine.js?v=7d12cb920c6a73d3';
 export const DEFAULT_CATALOG_ID='builtin-sofifa-220002-v1';
 export function supplementProvidedRosters(version,catalog){
  if(!version)return version;
