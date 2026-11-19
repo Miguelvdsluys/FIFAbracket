@@ -29,3 +29,32 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
 .tree-team[data-drag-team]{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}.tree-team[data-drag-team] img{-webkit-user-drag:none;user-select:none}.tree-team.team-held{opacity:.35;outline:2px dashed #82a862;outline-offset:-2px}.tree-team.team-drop-target{background:#d9efc1!important;outline:3px solid #639b36;outline-offset:-3px}.team-dragging,.team-dragging *{cursor:grabbing!important}.team-drag-ghost{position:fixed;z-index:1000;pointer-events:none;display:flex;align-items:center;gap:12px;width:230px;min-height:62px;padding:11px 14px;border:2px solid #659d38;border-radius:10px;background:#f5ffeb;color:#355224;box-shadow:0 12px 30px #18320d44;transform:rotate(-2deg);font-size:15px;font-weight:700}.team-drag-ghost .badge{width:34px;height:36px;flex-shrink:0}.team-drag-hint{position:fixed;z-index:1001;pointer-events:none;bottom:calc(15px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);max-width:calc(100vw - 24px);width:max-content;background:#2c4c1e;color:#fff;border-radius:8px;padding:13px 16px;font-size:12px;box-shadow:0 4px 20px #18320d33}
 .badge.has-logo:has(.soccer-aid-logo){overflow:hidden}.badge img.soccer-aid-logo{transform:scale(1.8);transform-origin:center}
 .transfer-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.transfer-summary>span{display:block;padding:17px;background:#eff7e6;border:1px solid #dae8cc;border-radius:9px;font-size:12px;color:#698351}.transfer-summary b{display:block;font-size:29px;margin-bottom:4px;color:#3c6528}.transfer-options{display:grid;gap:12px;margin:20px 0}.transfer-options button,.button-link{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:7px;font-size:14px}.button-link.primary{background:#b4ed72;color:#233a16;border:1px solid #9ed35b;font-weight:700}.transfer-note{font-size:12px!important;color:#7b896f}.transfer-actions{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:20px}.transfer-actions button{min-height:48px}.transfer-error{color:#a3432b!important;font-size:13px!important;white-space:normal}.transfer-error:empty,.transfer-progress:empty{display:none}.transfer-progress{font-size:13px!important;color:#527a38}.transfer-checkbox{display:flex;align-items:center;gap:12px;font-size:13px;margin:12px 0}.transfer-checkbox input{width:22px;height:22px;min-height:22px;flex-shrink:0;margin:0;accent-color:#598836}.transfer-checkbox span{flex:1}.app-tools [data-personal-data]{font-size:11px;min-height:44px}@media(max-width:760px){.transfer-summary{gap:8px}.transfer-summary>span{padding:13px}.transfer-actions{position:sticky;bottom:0;background:#fff;padding-top:12px;padding-bottom:4px;box-shadow:0 -8px 18px #fff}.transfer-actions .primary{font-size:13px;padding:12px 15px}.app-tools [data-personal-data]{font-size:11px;padding:8px}.transfer-summary b{font-size:27px}}
+
+.stats-switcher {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #d5e2ca;
+  border-radius: 10px;
+  background: #eaf1e3;
+}
+.stats-switcher button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px clamp(5px, 2vw, 16px);
+  color: #455b3b;
+  background: transparent;
+  border-color: transparent;
+}
+.stats-switcher button[aria-pressed="true"] {
+  color: #315c23;
+  background: #fff;
+  border-color: #d8e4ce;
+  box-shadow: 0 2px 6px #36562515;
+}
+@media (max-width: 760px) {
+  .stats-switcher { width: 100%; }
+  .stats-switcher button { flex: 1; }
+}
