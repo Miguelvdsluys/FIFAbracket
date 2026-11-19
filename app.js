@@ -1,10 +1,10 @@
-import {installPersonalData} from './personal-data.js?v=d9a46d036c918de8';
-import {installTeamDrag} from './team-drag.js?v=d9a46d036c918de8';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=d9a46d036c918de8';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=d9a46d036c918de8';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=d9a46d036c918de8';
-import {planImport} from './transfer.js?v=d9a46d036c918de8';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,records} from './engine.js?v=d9a46d036c918de8';
+import {installPersonalData} from './personal-data.js?v=ce01a4d8c0c15c8e';
+import {installTeamDrag} from './team-drag.js?v=ce01a4d8c0c15c8e';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=ce01a4d8c0c15c8e';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=ce01a4d8c0c15c8e';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=ce01a4d8c0c15c8e';
+import {planImport} from './transfer.js?v=ce01a4d8c0c15c8e';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,records} from './engine.js?v=ce01a4d8c0c15c8e';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -190,10 +190,11 @@ function renderRecords(tournaments){
   const sides=match.teams.map(id=>esc(name(t,id))).join(' – ');
   return `<tr>${byPlayer?`<td><span class="rank">${index+1}</span>${scorerLabel(player,team)}</td>`:''}
    <td>${byPlayer?'':`<span class="rank">${index+1}</span>`}${sides}<small>${esc(t.name)} · ${roundName(t,match.round)}</small></td>
+   <td><time datetime="${esc(match.result.date)}">${date(match.result.date)}</time></td>
    <td>${match.result.score.join(' – ')}</td><td class="lime">${goals}</td></tr>`;
  });
  return selection+'<p class="muted">Doelpunten uit strafschoppenseries tellen niet mee.</p>'
-  +recordTable([...(byPlayer?['SPELER']:[]),'WEDSTRIJD','UITSLAG','GOALS'],rows);
+  +recordTable([...(byPlayer?['SPELER']:[]),'WEDSTRIJD','DATUM','UITSLAG','GOALS'],rows);
 }
 function renderStatsSection(){
  const tournaments=filtered();
