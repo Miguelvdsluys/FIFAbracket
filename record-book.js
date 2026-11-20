@@ -1,4 +1,4 @@
-import {matches, winner} from './engine.js?v=ec2ff7a2c9ed098c';
+import {matches, winner} from './engine.js?v=b44543dfcce02bfc';
 
 const groupBy = (rows, key) => {
  const groups = new Map();
@@ -127,12 +127,15 @@ function titleHistory(completions){
  return {titles,losses,finished};
 }
 
+function recordTeam(tournament,id){
+ return {id,name:tournament.version.teams.find(team=>team.id===id)?.name||id,team:true};
+}
+
 function timeline(tournaments) {
  const played = matches(tournaments).sort((a,b)=>Date.parse(a.result.date)-Date.parse(b.result.date)
   ||Date.parse(a.tournament.createdAt)-Date.parse(b.tournament.createdAt)||a.round-b.round);
  const teams = [];
  const championHistory = [];
- const name = (t,id) => t.version.teams.find(team=>team.id===id)?.name||id;
  let reigning = null;
  for(const match of played){
   const tournament=match.tournament;
@@ -144,7 +147,7 @@ function timeline(tournaments) {
   for(const [side,id] of match.teams.entries()){
    const opponentId=match.teams[1-side];
    const goals=match.result.score[side],against=match.result.score[1-side];
-   teams.push({holder:{id,name:name(tournament,id)},opponent:{id:opponentId,name:name(tournament,opponentId)},
+   teams.push({holder:recordTeam(tournament,id),opponent:recordTeam(tournament,opponentId),
     tournament,match,date,day,isFinal,isSemi,goals,against,draw:goals===against,won:id===champion,
     reigning,side});
   }
@@ -162,7 +165,7 @@ function recordData(tournaments,history,includePlayers) {
  const selected=row=>included.get(row.tournament.id)?.has(row.match.id);
  const teams=historicalMatches.filter(selected);
  const matchTotals=teams.filter(row=>row.side===0).map(row=>({
-  ...row,holder:{id:row.match.id,name:row.match.teams.map(id=>row.tournament.version.teams.find(t=>t.id===id)?.name||id).join(' – ')},
+  ...row,holder:{id:row.match.id,name:row.holder.name+' – '+row.opponent.name,teams:[row.holder,row.opponent]},
   goals:row.goals+row.against
  }));
  const matchGroups=new Map(groupBy(teams,row=>row.tournament.id).map(group=>[group[0].tournament.id,group]));
@@ -171,7 +174,7 @@ function recordData(tournaments,history,includePlayers) {
   const {tournament}=match;
   for(const id of tournament.teamIds){
    const games=matchGroups.get(tournament.id)?.filter(row=>row.holder.id===id)||[];
-   const holder=games[0]?.holder||{id,name:tournament.version.teams.find(t=>t.id===id)?.name||id};
+   const holder=games[0]?.holder||recordTeam(tournament,id);
    const date=match.result.date;
    cups.push({holder,tournament,match,date,day:localDay.format(new Date(date)),
     finalist:match.teams.includes(id),title:champion===id,defended:champion===id&&defended,goals:sum(games,scored)});
@@ -194,8 +197,9 @@ function recordData(tournaments,history,includePlayers) {
     if(appearance){
      appearance.goals+=total;
      appearance.won||=row.won;
+     appearance.holder.playedFor.push(row.holder);
     }else appearances.set(playerMatch,{
-     ...row,holder:{id:player.id,name:player.displayName||player.name,player:true},goals:total
+     ...row,holder:{id:player.id,name:player.displayName||player.name,player:true,playedFor:[row.holder]},goals:total
     });
    }
   }
@@ -404,7 +408,7 @@ const calculations = {
  rivalFinals: rows => finalsAgainstSameOpponent(rows.filter(finalOnly)),
  meetings: rows => aggregate(rows.filter(row=>row.holder.id<row.opponent.id),
   row=>JSON.stringify([row.holder.id,row.opponent.id,row.tournament.id]),group=>group.length)
-  .map(row=>({...row,holder:{id:sequenceKey(row.last),name:row.last.holder.name+' – '+row.last.opponent.name}})),
+  .map(row=>({...row,holder:{id:sequenceKey(row.last),name:row.last.holder.name+' – '+row.last.opponent.name,teams:[row.last.holder,row.last.opponent]}})),
  tenGoalCups: rows => streaks(rows,row=>row.goals>=10),
  championWins: rows => byTournament(rows,group=>count(group,row=>row.won&&row.opponent.id===row.reigning)),
  perfectCup: (rows,_,data) => byTournament(rows,group=>count(group,won),([row])=>

@@ -1,11 +1,11 @@
-import {installPersonalData} from './personal-data.js?v=ec2ff7a2c9ed098c';
-import {installTeamDrag} from './team-drag.js?v=ec2ff7a2c9ed098c';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=ec2ff7a2c9ed098c';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=ec2ff7a2c9ed098c';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=ec2ff7a2c9ed098c';
-import {planImport} from './transfer.js?v=ec2ff7a2c9ed098c';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=ec2ff7a2c9ed098c';
-import {recordBook,recordSections,recordSubjects} from './record-book.js?v=ec2ff7a2c9ed098c';
+import {installPersonalData} from './personal-data.js?v=b44543dfcce02bfc';
+import {installTeamDrag} from './team-drag.js?v=b44543dfcce02bfc';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=b44543dfcce02bfc';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=b44543dfcce02bfc';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=b44543dfcce02bfc';
+import {planImport} from './transfer.js?v=b44543dfcce02bfc';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats} from './engine.js?v=b44543dfcce02bfc';
+import {recordBook,recordSections,recordSubjects} from './record-book.js?v=b44543dfcce02bfc';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -162,6 +162,16 @@ function recordTable(headers,rows){
   <tbody>${rows.join('')}</tbody>
  </table></div>`:'<div class="quiet">Nog geen resultaten voor dit record in deze selectie.</div>';
 }
+function recordHolderLabel(holder){
+ const teamLabel=team=>`${badge(team.name,team.id)} ${esc(team.name)}`;
+ if(holder.teams)return holder.teams.map(teamLabel).join(' – ');
+ if(holder.team)return teamLabel(holder);
+ if(holder.player){
+  const logos=holder.playedFor.map(team=>badge(team.name,team.id)).join(' ');
+  return `${logos} ${scorerLabel(holder)}`;
+ }
+ return esc(holder.name);
+}
 function renderRecords(tournaments){
  const section=recordSections.find(category=>category.id===recordSection);
  const subjects=recordSubjects(recordNumber);
@@ -178,8 +188,7 @@ function renderRecords(tournaments){
  const tableRows=rows.map(({holder,value,first,last,detail},index)=>{
   const tournament=first.tournament.id===last.tournament.id?esc(last.tournament.name):`${esc(first.tournament.name)} → ${esc(last.tournament.name)}`;
   const dates=first.day===last.day?time(last.date):`${time(first.date)} – ${time(last.date)}`;
-  const label=holder.player?scorerLabel(holder):esc(holder.name);
-  return `<tr><td><span class="rank">${index+1}</span>${label}</td>
+  return `<tr><td><span class="rank">${index+1}</span>${recordHolderLabel(holder)}</td>
    <td class="lime">${numberFormat.format(value)}${detail?`<small>${esc(detail)}</small>`:''}</td>
    <td>${tournament}</td><td>${dates}</td></tr>`;
  });
