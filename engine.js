@@ -17,6 +17,13 @@ export function createTournament(name,version,teamIds,shuffle=false,teamCount=te
  if(ids.length<teamCount)t.entryCatalog=structuredClone(version);
  propagate(t);return t;
 }
+export function nextTournamentMatch(tournament){
+ for(const [round,matches] of tournament.rounds.entries()){
+  const match=matches.find(candidate=>!candidate.bye&&!candidate.result&&candidate.teams.every(Boolean));
+  if(match)return {match,round};
+ }
+ return null;
+}
 export function openTeamSlots(t){return t.rounds[0].flatMap((m,index)=>m.teams.flatMap((id,side)=>!id&&!(m.bye&&side===1)?[{index,side}]:[]));}
 export function addTeam(t,teamId,index,side,extraCatalog=null){
  const m=t.rounds[0][index];

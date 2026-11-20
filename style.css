@@ -118,3 +118,100 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   text-align: left;
 }
 .nationality-button .scorer-flag { flex: none; }
+
+.cards.tournament-overview {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+}
+.tournament-tile > .tournament-preview-card {
+  --left-tint: color-mix(in srgb, var(--club-left, #b1bea9), #fff 68%);
+  --right-tint: color-mix(in srgb, var(--club-right, #b1bea9), #fff 68%);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-content: start;
+  min-height: 320px;
+  color: #1e2b21;
+  background: linear-gradient(90deg, var(--left-tint) 50%, var(--right-tint) 50%);
+  padding: clamp(14px, 3vw, 27px);
+}
+.tournament-preview-header {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+  padding-right: 76px;
+}
+.tournament-preview-title {
+  font: 600 clamp(23px, 4vw, 34px) 'Barlow Condensed', sans-serif;
+  overflow-wrap: anywhere;
+}
+.tournament-preview {
+  align-self: center;
+  min-width: 0;
+  width: 100%;
+  text-align: center;
+  display: grid;
+  gap: 12px;
+  padding: 12px 0 18px;
+}
+.tournament-preview-kicker {
+  justify-self: center;
+  border-radius: 999px;
+  background: #fff;
+  color: #283629;
+  padding: 6px 13px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.tournament-preview-lineup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(7px, 2vw, 20px);
+}
+.tournament-preview-lineup.champion-lineup {
+  grid-template-columns: minmax(0, 1fr);
+}
+.tournament-preview-team {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.tournament-preview-team strong {
+  font: 600 clamp(19px, 4vw, 27px)/1.1 'Barlow Condensed', sans-serif;
+  overflow-wrap: anywhere;
+}
+.tournament-preview-logo {
+  width: clamp(61px, 12vw, 84px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px #17271e1a;
+}
+.tournament-preview-logo .badge {
+  width: 70%;
+  height: 70%;
+  font-size: 16px;
+}
+.tournament-preview-versus {
+  margin-top: clamp(20px, 4vw, 31px);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tournament-preview-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px 12px;
+  border-top: 1px solid #242e2530;
+  color: #34463a;
+  padding-top: 12px;
+  font-size: 12px;
+}
+.tournament-preview-tile .tile-delete {
+  color: #7a2c16;
+  background: #fff;
+  border-radius: 7px;
+}
+.tournament-preview-tile .tile-delete:hover { background: #fff0e9; }
