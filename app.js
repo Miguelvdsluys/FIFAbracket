@@ -1,11 +1,11 @@
-import {installPersonalData} from './personal-data.js?v=9b75b7ceeb47db7f';
-import {installTeamDrag} from './team-drag.js?v=9b75b7ceeb47db7f';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=9b75b7ceeb47db7f';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=9b75b7ceeb47db7f';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=9b75b7ceeb47db7f';
-import {planImport} from './transfer.js?v=9b75b7ceeb47db7f';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch} from './engine.js?v=9b75b7ceeb47db7f';
-import {recordBook,recordSections,recordSubjects} from './record-book.js?v=9b75b7ceeb47db7f';
+import {installPersonalData} from './personal-data.js?v=fb85e365c58fc5ee';
+import {installTeamDrag} from './team-drag.js?v=fb85e365c58fc5ee';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=fb85e365c58fc5ee';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=fb85e365c58fc5ee';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=fb85e365c58fc5ee';
+import {planImport} from './transfer.js?v=fb85e365c58fc5ee';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch} from './engine.js?v=fb85e365c58fc5ee';
+import {recordBook,recordSections,recordSubjects} from './record-book.js?v=fb85e365c58fc5ee';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -110,18 +110,16 @@ function tournamentOverviewCard(t){
    ? `<span class="tournament-preview-kicker">Volgende wedstrijd · ${roundName(t,next.round)}</span>
       <span class="tournament-preview-lineup">${team(ids[0])}<span class="tournament-preview-versus">tegen</span>${team(ids[1])}</span>`
    : '<span class="tournament-preview-kicker">Wacht op deelnemers</span>';
- return `<article class="tournament-tile tournament-preview-tile"${style}>
-  <button type="button" class="tournament-card tournament-preview-card" data-tournament="${esc(t.id)}">
-   <span class="tournament-preview-header">
-    <span class="pill ${completed?'finished':''}">${completed?'AFGEROND':'ACTIEF'}</span>
-    <strong class="tournament-preview-title">${esc(t.name)}</strong>
-   </span>
-   <span class="tournament-preview">${preview}</span>
-   <span class="tournament-preview-footer">
-    <span>${t.teamIds.length}/${t.teamCount||t.teamIds.length} teams · ${matches([t]).length} gespeeld</span>
-    <span>Open toernooi <span aria-hidden="true">→</span></span>
-   </span>
-  </button>
+ return `<article class="tournament-tile tournament-preview-tile tournament-preview-card"${style}>
+  <div class="tournament-preview-header">
+   <span class="pill ${completed?'finished':''}">${completed?'AFGEROND':'ACTIEF'}</span>
+   <button type="button" class="tournament-preview-title" data-rename-tournament="${esc(t.id)}" aria-label="Naam wijzigen: ${esc(t.name)}" aria-haspopup="dialog"><span>${esc(t.name)}</span><span class="tournament-title-edit" aria-hidden="true">✎</span></button>
+  </div>
+  <span class="tournament-preview">${preview}</span>
+  <div class="tournament-preview-footer">
+   <span>${t.teamIds.length}/${t.teamCount||t.teamIds.length} teams · ${matches([t]).length} gespeeld</span>
+   <button type="button" class="tournament-preview-open" data-tournament="${esc(t.id)}" aria-label="Open toernooi: ${esc(t.name)}">Open toernooi <span aria-hidden="true">→</span></button>
+  </div>
   <button type="button" class="tile-delete" data-delete="${esc(t.id)}" aria-label="${esc(t.name)} verwijderen">Verwijderen</button>
  </article>`;
 }
@@ -321,6 +319,46 @@ async function applyTeamEdit(tid,index,side,target){
  }
  await persist();if($('#modal').open)$('#modal').close();render();notify(removing?'Team verwijderd. De plek is weer vrij.':'Teams aangepast.');return true;
 }
+function openRenameTournament(id){
+ const tournament=state.tournaments.find(t=>t.id===id);
+ if(!tournament)return;
+ modal('Toernooinaam wijzigen',`<form id="rename-tournament-form" data-tournament-id="${esc(id)}">
+  <label>Toernooinaam<input name="tournamentName" value="${esc(tournament.name)}" required></label>
+  <div class="delete-actions"><button type="button" data-close>Annuleren</button><button type="submit" class="primary">Opslaan</button></div>
+ </form>`);
+ const input=$('#rename-tournament-form').elements.tournamentName;
+ input.focus();
+ input.select();
+}
+async function renameTournament(form){
+ const {tournamentId}=form.dataset;
+ const tournament=state.tournaments.find(t=>t.id===tournamentId);
+ if(!tournament)throw Error('Toernooi niet gevonden.');
+ const input=form.elements.tournamentName;
+ const newName=input.value.trim();
+ if(!newName){
+  input.focus();
+  throw Error('Geef je toernooi een naam.');
+ }
+ const button=form.querySelector('[type="submit"]');
+ if(button.disabled)return;
+ if(newName===tournament.name){
+  $('#modal').close();
+  return;
+ }
+ button.disabled=true;
+ try{
+  tournament.name=newName;
+  await persist();
+  const returnFocus=form.isConnected&&$('#modal').open;
+  if(returnFocus)$('#modal').close();
+  render();
+  if(returnFocus)$(`[data-rename-tournament="${CSS.escape(tournamentId)}"]`)?.focus();
+  notify('Toernooinaam gewijzigd.');
+ }finally{
+  button.disabled=false;
+ }
+}
 function confirmDeletion(tid){
  const t=state.tournaments.find(t=>t.id===tid);if(!t)return;
  modal('Toernooi verwijderen',`<p>Wil je <b>${esc(t.name)}</b> verwijderen, inclusief ${matches([t]).length} opgeslagen uitslagen?</p><p>De bijbehorende goals en resultaten verdwijnen ook uit de statistieken.</p><div class="delete-actions"><button data-close>Annuleren</button><button class="danger" data-confirm-delete="${t.id}">Toernooi verwijderen</button></div>`);
@@ -390,14 +428,14 @@ document.addEventListener('click',async e=>{const slot=e.target.closest('[data-e
  const {tid,index,side}=draft.teamEntry;
  await applyTeamEdit(tid,index,side,null);
  return;
-}if(b.hasAttribute('data-toggle-penalties')){const fields=$('#penalty-fields');fields.hidden=!fields.hidden;if(fields.hidden)fields.querySelectorAll('input').forEach(input=>input.value='');b.setAttribute('aria-expanded',String(!fields.hidden));b.textContent=(fields.hidden?'＋':'−')+' Strafschoppenserie';}if(b.dataset.confirmDelete){const tid=b.dataset.confirmDelete;state.tournaments=state.tournaments.filter(t=>t.id!==tid);await persist();if(selected===tid)selected=null;if(filterTournament===tid)filterTournament='';$('#modal').close();render();notify('Toernooi verwijderd.');}if(b.hasAttribute('data-bracket-menu')){const toolbar=$('.bracket-toolbar');const open=toolbar.classList.toggle('options-open');b.setAttribute('aria-expanded',String(open));}if(b.hasAttribute('data-toggle-overview')){const canvas=$('.tree-canvas');if(Number(canvas.dataset.zoom)<.9){bracketZoom[selected]=1;}else{bracketZoom[selected]=Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height));}bracketScroll[selected]={left:0,top:0};setupBracket();}if(b.hasAttribute('data-toggle-focus')){bracketFocus=!bracketFocus;render();}if(b.dataset.fillTeams)openAddTeams(b.dataset.fillTeams);if(b.dataset.addTeam){const {tid,index,side}=draft.teamEntry;const t=state.tournaments.find(t=>t.id===tid);addTeam(t,b.dataset.addTeam,index,side,teamCatalog(t));await persist();render();if(openTeamSlots(t).length)openAddTeams(tid);else{$('#modal').close();notify('Alle teams zijn ingevuld.');}}if(b.dataset.bracketView){bracketViews[selected]=b.dataset.bracketView;render();}if(b.dataset.treeZoom){const canvas=$('.tree-canvas');const zoom=Number(canvas.dataset.zoom);if(b.dataset.treeZoom==='fit')bracketScroll[selected]={left:0,top:0};bracketZoom[selected]=b.dataset.treeZoom==='fit'?Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height)):Math.max(.2,Math.min(1.5,zoom+(b.dataset.treeZoom==='in'?.15:-.15)));setupBracket();}if(b.hasAttribute('data-close'))$('#modal').close();if(b.dataset.action==='new')newTournament();if(b.dataset.action==='catalog')catalog();if(b.dataset.action==='back'){selected=null;render();}if(b.dataset.action==='clear-filter'){filterTournament='';filterDate='';render();}if(b.dataset.tournament){bracketFocus=true;selected=b.dataset.tournament;location.hash='tournaments';render();}if(b.dataset.match){const [tid,r,i]=b.dataset.match.split('|');openMatch(tid,Number(r),Number(i));}if(b.dataset.team)profile('team',b.dataset.team);if(b.dataset.player)profile('player',b.dataset.player);if(b.dataset.duel!==undefined)profile('duel',b.dataset.duel);if(b.dataset.pick){const id=b.dataset.pick,index=draft.ids.indexOf(id);if(index>=0)draft.ids.splice(index,1);else if(draft.ids.length<draft.count)draft.ids.push(id);else notify('Alle plekken zijn gevuld.');if(index<0&&$('#team-search'))$('#team-search').value='';updatePicker();}if(b.dataset.removeGoal!==undefined){
+}if(b.hasAttribute('data-toggle-penalties')){const fields=$('#penalty-fields');fields.hidden=!fields.hidden;if(fields.hidden)fields.querySelectorAll('input').forEach(input=>input.value='');b.setAttribute('aria-expanded',String(!fields.hidden));b.textContent=(fields.hidden?'＋':'−')+' Strafschoppenserie';}if(b.dataset.confirmDelete){const tid=b.dataset.confirmDelete;state.tournaments=state.tournaments.filter(t=>t.id!==tid);await persist();if(selected===tid)selected=null;if(filterTournament===tid)filterTournament='';$('#modal').close();render();notify('Toernooi verwijderd.');}if(b.hasAttribute('data-bracket-menu')){const toolbar=$('.bracket-toolbar');const open=toolbar.classList.toggle('options-open');b.setAttribute('aria-expanded',String(open));}if(b.hasAttribute('data-toggle-overview')){const canvas=$('.tree-canvas');if(Number(canvas.dataset.zoom)<.9){bracketZoom[selected]=1;}else{bracketZoom[selected]=Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height));}bracketScroll[selected]={left:0,top:0};setupBracket();}if(b.hasAttribute('data-toggle-focus')){bracketFocus=!bracketFocus;render();}if(b.dataset.fillTeams)openAddTeams(b.dataset.fillTeams);if(b.dataset.addTeam){const {tid,index,side}=draft.teamEntry;const t=state.tournaments.find(t=>t.id===tid);addTeam(t,b.dataset.addTeam,index,side,teamCatalog(t));await persist();render();if(openTeamSlots(t).length)openAddTeams(tid);else{$('#modal').close();notify('Alle teams zijn ingevuld.');}}if(b.dataset.bracketView){bracketViews[selected]=b.dataset.bracketView;render();}if(b.dataset.treeZoom){const canvas=$('.tree-canvas');const zoom=Number(canvas.dataset.zoom);if(b.dataset.treeZoom==='fit')bracketScroll[selected]={left:0,top:0};bracketZoom[selected]=b.dataset.treeZoom==='fit'?Math.min(1.5,$('.tree-viewport').clientWidth/Number(canvas.dataset.width),$('.tree-viewport').clientHeight/Number(canvas.dataset.height)):Math.max(.2,Math.min(1.5,zoom+(b.dataset.treeZoom==='in'?.15:-.15)));setupBracket();}if(b.hasAttribute('data-close'))$('#modal').close();if(b.dataset.action==='new')newTournament();if(b.dataset.action==='catalog')catalog();if(b.dataset.action==='back'){selected=null;render();}if(b.dataset.action==='clear-filter'){filterTournament='';filterDate='';render();}if(b.dataset.renameTournament){openRenameTournament(b.dataset.renameTournament);return;}if(b.dataset.tournament){bracketFocus=true;selected=b.dataset.tournament;location.hash='tournaments';render();}if(b.dataset.match){const [tid,r,i]=b.dataset.match.split('|');openMatch(tid,Number(r),Number(i));}if(b.dataset.team)profile('team',b.dataset.team);if(b.dataset.player)profile('player',b.dataset.player);if(b.dataset.duel!==undefined)profile('duel',b.dataset.duel);if(b.dataset.pick){const id=b.dataset.pick,index=draft.ids.indexOf(id);if(index>=0)draft.ids.splice(index,1);else if(draft.ids.length<draft.count)draft.ids.push(id);else notify('Alle plekken zijn gevuld.');if(index<0&&$('#team-search'))$('#team-search').value='';updatePicker();}if(b.dataset.removeGoal!==undefined){
  const index=Number(b.dataset.removeGoal),goals=draft.match.goals;
  if(--goals[index].count===0)goals.splice(index,1);
  drawGoals();
  const buttons=$('#goals-list').querySelectorAll('[data-remove-goal]');
  (buttons[Math.min(index,buttons.length-1)]||$('#goal-side')).focus();
 }if(b.dataset.goalKind)addGoal(b.dataset.goalKind,b.dataset.goalPlayer??null);if(b.dataset.action==='start'){state.tournaments.push(draft.preview);await persist();selected=draft.preview.id;$('#modal').close();location.hash='tournaments';render();notify('Toernooi gestart. Succes!');}if(b.dataset.action==='redo')wizardStep(3);if(b.dataset.step)wizardStep(Number(b.dataset.step));if(b.dataset.count){draft.count=Number(b.dataset.count);wizardStep(2);}if(b.dataset.delete)confirmDeletion(b.dataset.delete);}catch(err){notify(err.message);}});
-document.addEventListener('submit',async e=>{e.preventDefault();try{const f=e.target;if(f.id==='name-form'){draft.name=f.elements.name.value.trim();if(!draft.name)throw Error('Geef je toernooi een naam.');wizardStep(2);}if(f.id==='count-form'){const count=Number(f.elements.count.value);if(!Number.isInteger(count)||count<2||count>32)throw Error('Kies 2 tot en met 32 teams.');draft.count=count;draft.ids=draft.ids.slice(0,count);wizardStep(3);}if(f.id==='new-form'){const count=draft.count;if(draft.ids.length<2||draft.ids.length>count)throw Error('Kies minimaal twee teams om te starten.');draft.method=f.elements.method.value;draft.preview=createTournament(draft.name,defaultCatalog,draft.ids,draft.method==='random',draft.count);const t=draft.preview;modal('Jouw speelschema',`<p>${esc(t.name)} · ${t.teamIds.length}/${t.teamCount} teams ingevuld · ${t.rounds[0].filter(m=>m.bye).length} vrijstellingen</p>${t.rounds[0].map(m=>`<div class="goal-row">${m.teams[0]?badge(name(t,m.teams[0]),m.teams[0]):''}${esc(name(t,m.teams[0]))} <b>${m.bye?'→ direct door':'tegen'}</b> ${m.bye?'':esc(name(t,m.teams[1]))}</div>`).join('')}<div class="notice">Je kunt direct spelen. Lege plekken kun je later invullen door erop te tikken. Een vrijstelling betekent direct door naar de volgende ronde.</div><button class="subtle" data-action="redo">Opnieuw samenstellen</button> <button class="primary" data-action="start">Start toernooi →</button>`);}if(f.id==='result-form'){const {tid,r,i,goals}=draft.match,t=state.tournaments.find(t=>t.id===tid);const result={score:[Number(f.elements.score0.value),Number(f.elements.score1.value)],penalties:!$('#penalty-fields').hidden&&f.elements.pen0.value!==''&&f.elements.pen1.value!==''?[Number(f.elements.pen0.value),Number(f.elements.pen1.value)]:null,goals,date:t.rounds[r][i].result?.date};let outcome=saveResult(t,r,i,result);if(outcome.needsConfirmation){const text=outcome.needsConfirmation.map(m=>m.teams.map(id=>name(t,id)).join(' – ')).join('\n');if(!confirm('De winnaar verandert. Deze vervolguitslagen worden teruggezet:\n'+text+'\nDoorgaan?'))return;saveResult(t,r,i,result,true);}await persist();$('#modal').close();render();notify('Uitslag opgeslagen. Schema en statistieken bijgewerkt.');}}catch(err){notify(err.message);}});
+document.addEventListener('submit',async e=>{e.preventDefault();try{const f=e.target;if(f.id==='rename-tournament-form'){await renameTournament(f);return;}if(f.id==='name-form'){draft.name=f.elements.name.value.trim();if(!draft.name)throw Error('Geef je toernooi een naam.');wizardStep(2);}if(f.id==='count-form'){const count=Number(f.elements.count.value);if(!Number.isInteger(count)||count<2||count>32)throw Error('Kies 2 tot en met 32 teams.');draft.count=count;draft.ids=draft.ids.slice(0,count);wizardStep(3);}if(f.id==='new-form'){const count=draft.count;if(draft.ids.length<2||draft.ids.length>count)throw Error('Kies minimaal twee teams om te starten.');draft.method=f.elements.method.value;draft.preview=createTournament(draft.name,defaultCatalog,draft.ids,draft.method==='random',draft.count);const t=draft.preview;modal('Jouw speelschema',`<p>${esc(t.name)} · ${t.teamIds.length}/${t.teamCount} teams ingevuld · ${t.rounds[0].filter(m=>m.bye).length} vrijstellingen</p>${t.rounds[0].map(m=>`<div class="goal-row">${m.teams[0]?badge(name(t,m.teams[0]),m.teams[0]):''}${esc(name(t,m.teams[0]))} <b>${m.bye?'→ direct door':'tegen'}</b> ${m.bye?'':esc(name(t,m.teams[1]))}</div>`).join('')}<div class="notice">Je kunt direct spelen. Lege plekken kun je later invullen door erop te tikken. Een vrijstelling betekent direct door naar de volgende ronde.</div><button class="subtle" data-action="redo">Opnieuw samenstellen</button> <button class="primary" data-action="start">Start toernooi →</button>`);}if(f.id==='result-form'){const {tid,r,i,goals}=draft.match,t=state.tournaments.find(t=>t.id===tid);const result={score:[Number(f.elements.score0.value),Number(f.elements.score1.value)],penalties:!$('#penalty-fields').hidden&&f.elements.pen0.value!==''&&f.elements.pen1.value!==''?[Number(f.elements.pen0.value),Number(f.elements.pen1.value)]:null,goals,date:t.rounds[r][i].result?.date};let outcome=saveResult(t,r,i,result);if(outcome.needsConfirmation){const text=outcome.needsConfirmation.map(m=>m.teams.map(id=>name(t,id)).join(' – ')).join('\n');if(!confirm('De winnaar verandert. Deze vervolguitslagen worden teruggezet:\n'+text+'\nDoorgaan?'))return;saveResult(t,r,i,result,true);}await persist();$('#modal').close();render();notify('Uitslag opgeslagen. Schema en statistieken bijgewerkt.');}}catch(err){notify(err.message);}});
 document.addEventListener('change',async e=>{try{if(['record-section','record-number','record-subject'].includes(e.target.id)){
  const {id,value}=e.target;
  if(id==='record-section'){

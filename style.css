@@ -122,7 +122,7 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
 .cards.tournament-overview {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
 }
-.tournament-tile > .tournament-preview-card {
+.tournament-preview-card {
   --left-tint: color-mix(in srgb, var(--club-left, #b1bea9), #fff 68%);
   --right-tint: color-mix(in srgb, var(--club-right, #b1bea9), #fff 68%);
   display: grid;
@@ -130,6 +130,8 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   align-content: start;
   min-height: 320px;
   color: #1e2b21;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   background: linear-gradient(90deg, var(--left-tint) 50%, var(--right-tint) 50%);
   padding: clamp(14px, 3vw, 27px);
 }
@@ -146,6 +148,20 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   border: 1px solid #24382c38;
   border-radius: 7px;
   background: #ffffffe8;
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  min-width: 0;
+  color: inherit;
+  text-align: left;
+}
+.tournament-preview-title:hover { background: #fff; }
+.tournament-title-edit {
+  font: 400 15px/1 sans-serif;
+  color: #34463a;
 }
 .tournament-preview {
   align-self: center;
@@ -213,7 +229,27 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   padding-top: 12px;
   font-size: 12px;
 }
+.tournament-preview-open {
+  position: static;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
+.tournament-preview-open:hover { background: transparent; text-decoration: underline; }
+.tournament-preview-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+}
+.tournament-preview-open:focus-visible::after {
+  outline: 2px solid #3c6f2c;
+  outline-offset: 2px;
+}
 .tournament-preview-tile .tile-delete {
+  z-index: 1;
   color: #7a2c16;
   background: #fff;
   border-radius: 7px;
