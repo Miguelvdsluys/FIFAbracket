@@ -1,11 +1,11 @@
-import {installPersonalData} from './personal-data.js?v=2d4c2687bf211252';
-import {installTeamDrag} from './team-drag.js?v=2d4c2687bf211252';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=2d4c2687bf211252';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=2d4c2687bf211252';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=2d4c2687bf211252';
-import {planImport} from './transfer.js?v=2d4c2687bf211252';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch,generalStatistics} from './engine.js?v=2d4c2687bf211252';
-import {recordBook,recordSections,recordSubjects} from './record-book.js?v=2d4c2687bf211252';
+import {installPersonalData} from './personal-data.js?v=165e2e95a1a5ce20';
+import {installTeamDrag} from './team-drag.js?v=165e2e95a1a5ce20';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=165e2e95a1a5ce20';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=165e2e95a1a5ce20';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=165e2e95a1a5ce20';
+import {planImport} from './transfer.js?v=165e2e95a1a5ce20';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch,generalStatistics} from './engine.js?v=165e2e95a1a5ce20';
+import {recordBook,recordSections,recordSubjects} from './record-book.js?v=165e2e95a1a5ce20';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -301,14 +301,7 @@ function openGeneralList(button){
  const title=esc(button.closest('.general-metric').querySelector('h4').textContent);
  const tournaments=filtered();
  if(key==='scorers'){
-  const players=stats(tournaments).players.sort((a,b)=>b.goals-a.goals||a.name.localeCompare(b.name,'nl'));
-  const filterText=filterTournament||filterDate?' in deze selectie':'';
-  const body=players.length?`<p>${players.length.toLocaleString('nl-NL')} unieke doelpuntenmakers${filterText}</p>
-   <div class="table-wrap"><table>
-    <thead><tr><th scope="col">SPELER</th><th scope="col">GOALS</th></tr></thead>
-    <tbody>${players.map(player=>`<tr><td>${scorerLabel(player)}</td><td class="lime">${player.goals}</td></tr>`).join('')}</tbody>
-   </table></div>`:'<p>Nog geen doelpunten aan spelers toegewezen in deze selectie.</p>';
-  modal(title,body);
+  openScorerDirectory(tournaments);
   return;
  }
  const items=generalOverview(tournaments)[key];
@@ -317,6 +310,78 @@ function openGeneralList(button){
   ? [...items].sort(generalCountryOrder).map(([code,name])=>generalCountryLabel(code,name))
   : [...items.values()].sort(generalTeamOrder).map(team=>`${badge(team.name,team.id)} ${esc(team.name)}`);
  modal(title,`<ul class="general-detail-list">${labels.map(label=>`<li>${label}</li>`).join('')}</ul>`);
+}
+let scorerDirectory;
+const directoryName=player=>String(player.displayName||player.name);
+function openScorerDirectory(tournaments){
+ const teams=new Map(),rosters=new Map();
+ function addVersion(version){
+  for(const team of version.teams){
+   if(!teams.has(team.id))teams.set(team.id,team);
+  }
+  for(const player of version.players){
+   if(!rosters.has(player.teamId))rosters.set(player.teamId,new Map());
+   const roster=rosters.get(player.teamId);
+   if(!roster.has(player.id))roster.set(player.id,player);
+  }
+ }
+ addVersion(defaultCatalog);
+ for(const tournament of state.tournaments)addVersion(tournament.version);
+ const leagues=new Map();
+ for(const team of teams.values()){
+  const leagueName=typeof team.league==='string'?team.league.trim():'';
+  const league=team.type==='nationaal'?'Landenteams'
+   :team.type==='special'?'Speciale teams'
+   :leagueName||(team.type==='club'?'Overige clubs':'Overige teams');
+  if(!leagues.has(league))leagues.set(league,[]);
+  leagues.get(league).push(team);
+ }
+ const goals=new Map(stats(tournaments).players.map(player=>[player.id,player.goals]));
+ scorerDirectory={goals,leagues,rosters};
+ renderScorerDirectory();
+}
+function renderScorerDirectory(league='',teamId=''){
+ const {goals,leagues,rosters}=scorerDirectory;
+ const clubs=leagues.get(league);
+ const team=clubs?.find(club=>club.id===teamId);
+ const competitionLink='<button type="button" data-scorer-directory>Alle competities</button>';
+ const breadcrumb=team
+  ? `${competitionLink}<span aria-hidden="true">›</span><button type="button" data-scorer-directory data-directory-league="${esc(league)}">${esc(league)}</button>`
+  : clubs?competitionLink:'';
+ let title,content;
+ if(team){
+  const roster=[...(rosters.get(team.id)?.values()||[])].sort((a,b)=>
+   (goals.get(b.id)||0)-(goals.get(a.id)||0)||directoryName(a).localeCompare(directoryName(b),'nl'));
+  title=`${badge(team.name,team.id)} ${esc(team.name)}`;
+  content=roster.length?`<ul class="scorer-directory-players">${roster.map(player=>{
+   const total=goals.get(player.id)||0;
+   const flag=catalogScorers.get(player.id);
+   return `<li class="${total?'has-scored':''}">
+    <span>${flag?nationalityFlag(flag)+' ':''}${esc(directoryName(player))}</span>
+    ${total?`<strong>${total} ${total===1?'goal':'goals'}</strong>`:''}
+   </li>`;
+  }).join('')}</ul>`:'<p>Geen spelers beschikbaar voor dit team.</p>';
+ }else if(clubs){
+  title=esc(league);
+  content=`<ul class="scorer-directory-options">${[...clubs].sort(generalTeamOrder).map(club=>`
+   <li><button type="button" data-scorer-directory data-directory-league="${esc(league)}" data-directory-team="${esc(club.id)}">
+    ${badge(club.name,club.id)} <span>${esc(club.name)}</span><span aria-hidden="true">›</span>
+   </button></li>`).join('')}</ul>`;
+ }else{
+  title='Competities en teams';
+  content=`<ul class="scorer-directory-options">${[...leagues.keys()].sort((a,b)=>a.localeCompare(b,'nl')).map(name=>`
+   <li><button type="button" data-scorer-directory data-directory-league="${esc(name)}">
+    <span>${esc(name)}</span><span aria-hidden="true">›</span>
+   </button></li>`).join('')}</ul>`;
+ }
+ const goalContext=filterTournament||filterDate?'binnen je statistiekfilters':'over alle toernooien';
+ modal('Doelpuntenmakers',`<section id="scorer-directory" aria-labelledby="scorer-directory-title">
+  ${breadcrumb?`<div role="navigation" aria-label="Terug naar overzicht" class="scorer-directory-path">${breadcrumb}</div>`:''}
+  <h3 id="scorer-directory-title" tabindex="-1">${title}</h3>
+  ${team?`<p>De gemarkeerde spelers hebben ${goalContext} gescoord. Goals bij andere teams tellen mee.</p>`:''}
+  ${content}
+ </section>`);
+ $('#scorer-directory-title').focus();
 }
 function renderGeneral(tournaments){
  const data=generalOverview(tournaments);
@@ -513,6 +578,13 @@ function drawGoals(){
  }).join(' · ');
 }
 function profile(kind,id){const ts=filtered(),s=stats(ts);if(kind==='team'){const x=s.teams.find(x=>x.id===id);const ms=matches(ts).filter(m=>m.teams.includes(id));const scorers=s.players.filter(p=>p.teams[id]).sort((a,b)=>b.teams[id]-a.teams[id]);modal(esc(x.name),`<p>${x.entries} deelnames · ${x.wins} zeges · ${x.finals} finales · ${x.titles} titels</p><h3>Beste resultaat per toernooi</h3>${ts.filter(t=>t.teamIds.includes(id)).map(t=>{let best=0;t.rounds.forEach((round,r)=>{if(round.some(m=>m.teams.includes(id)))best=r;});return `<p>${esc(t.name)}: ${done(t)&&winner(t.rounds.at(-1)[0])===id?'Kampioen':roundName(t,best)}</p>`;}).join('')}<h3>Eigen topscorers</h3>${scorers.map(p=>`<p>${scorerLabel(p,teamIds.get(id))} · ${p.teams[id]} goals</p>`).join('')||'<p>Nog geen toegewezen goals.</p>'}${archiveRows(ms)}`);}else if(kind==='player'){const p=s.players.find(x=>x.id===id);modal(esc(p.name),`<p>${p.goals} goals in ${p.matchIds.size} wedstrijden</p><h3>Per team</h3>${Object.entries(p.teams).map(([id,n])=>`<p>${esc(s.teams.find(t=>t.id===id)?.name)}: ${n}</p>`).join('')}<h3>Per toernooi</h3>${Object.entries(p.tournaments).map(([id,n])=>`<p>${esc(ts.find(t=>t.id===id)?.name)}: ${n}</p>`).join('')}${archiveRows(matches(ts).filter(m=>p.matchIds.has(m.id)))}`);}else{const d=s.duels[Number(id)];modal('Onderlinge duels',archiveRows(d.matches));}}
+$('#modal').addEventListener('click',event=>{
+ const link=event.target.closest('[data-scorer-directory]');
+ if(link&&scorerDirectory)renderScorerDirectory(link.dataset.directoryLeague,link.dataset.directoryTeam);
+});
+$('#modal').addEventListener('close',()=>{
+ if(!$('#modal').open)scorerDirectory=null;
+});
 $('#app').addEventListener('click', event => {
  const generalButton=event.target.closest('[data-general-list]');
  if(generalButton){
