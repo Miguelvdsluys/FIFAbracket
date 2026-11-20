@@ -334,3 +334,46 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+.general-detail {
+  border: 1px solid #b8ceb6;
+  border-radius: 6px;
+  background: #edf4eb;
+  color: #284a30;
+  padding: 5px 9px;
+  min-height: 44px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: left;
+}
+.general-detail:hover { background: #e0ecdc; }
+.general-scorers > .general-detail { margin-top: 10px; }
+.general-scorers > .general-scorer-ratio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: clamp(26px, 5vw, 40px);
+}
+.general-scorer-ratio span {
+  color: #516b56;
+  font-size: .62em;
+}
+.general-detail-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 8px;
+}
+.general-detail-list li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid #d7e4d6;
+  border-radius: 6px;
+  color: #28402c;
+}
+.general-detail-list .scorer-flag { flex: none; }

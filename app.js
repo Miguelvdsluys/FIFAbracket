@@ -1,11 +1,11 @@
-import {installPersonalData} from './personal-data.js?v=427d56543bb2f809';
-import {installTeamDrag} from './team-drag.js?v=427d56543bb2f809';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=427d56543bb2f809';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=427d56543bb2f809';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=427d56543bb2f809';
-import {planImport} from './transfer.js?v=427d56543bb2f809';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch,generalStatistics} from './engine.js?v=427d56543bb2f809';
-import {recordBook,recordSections,recordSubjects} from './record-book.js?v=427d56543bb2f809';
+import {installPersonalData} from './personal-data.js?v=2d4c2687bf211252';
+import {installTeamDrag} from './team-drag.js?v=2d4c2687bf211252';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=2d4c2687bf211252';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=2d4c2687bf211252';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=2d4c2687bf211252';
+import {planImport} from './transfer.js?v=2d4c2687bf211252';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch,generalStatistics} from './engine.js?v=2d4c2687bf211252';
+import {recordBook,recordSections,recordSubjects} from './record-book.js?v=2d4c2687bf211252';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -47,6 +47,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>
 const name=(t,id)=>t.version.teams.find(x=>x.id===id)?.name||'Nog te bepalen';
 const initials=n=>n.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
 const teamNames=new Map(defaultCatalog.teams.map(t=>[t.name,t])),teamIds=new Map(defaultCatalog.teams.map(t=>[t.id,t]));
+const catalogPlayerIds=new Set(defaultCatalog.players.map(player=>player.id));
 const catalogScorers = new Map(defaultCatalog.players.filter(player => player.flagCode).map(player => [player.id, player]));
 const flagSprite = new URL('./data/nationality-flags.svg', import.meta.url).href;
 const regionNames = new Intl.DisplayNames(['nl'],{type:'region',fallback:'none'});
@@ -245,19 +246,28 @@ function scorerCountries(ids){
  }
  return countries;
 }
-function overviewFlags(countries){
+const generalCountryOrder=(a,b)=>a[1].localeCompare(b[1],'nl');
+const generalTeamOrder=(a,b)=>a.name.localeCompare(b.name,'nl');
+function generalCountryLabel(flagCode,nationality){
+ return `${nationalityFlag({flagCode,nationality},true)} ${esc(nationality)}`;
+}
+function generalMore(key,count){
+ return `<button type="button" class="general-detail" data-general-list="${key}" aria-haspopup="dialog">+${count} meer</button>`;
+}
+function overviewFlags(countries,key){
  if(!countries.size)return '';
- const ordered=[...countries].sort((a,b)=>a[1].localeCompare(b[1],'nl'));
- const chips=ordered.slice(0,6).map(([flagCode,nationality])=>
-  `<span>${nationalityFlag({flagCode,nationality},true)} ${esc(nationality)}</span>`);
- if(ordered.length>chips.length)chips.push(`<span>+${ordered.length-chips.length} meer</span>`);
+ const ordered=[...countries].sort(generalCountryOrder);
+ const chips=ordered.slice(0,6).map(([flagCode,nationality])=>`<span>${generalCountryLabel(flagCode,nationality)}</span>`);
+ const remaining=ordered.length-chips.length;
+ if(remaining)chips.push(generalMore(key,remaining));
  return `<div class="general-flags">${chips.join('')}</div>`;
 }
-function overviewLogos(teams){
+function overviewLogos(teams,key){
  if(!teams.size)return '';
- const ordered=[...teams.values()].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
+ const ordered=[...teams.values()].sort(generalTeamOrder);
  const logos=ordered.slice(0,5).map(team=>`<span class="general-team-logo" title="${esc(team.name)}" role="img" aria-label="${esc(team.name)}">${badge(team.name,team.id)}</span>`);
- if(ordered.length>logos.length)logos.push(`<span class="muted">+${ordered.length-logos.length} meer</span>`);
+ const remaining=ordered.length-logos.length;
+ if(remaining)logos.push(generalMore(key,remaining));
  return `<div class="general-team-logos">${logos.join('')}</div>`;
 }
 function generalMetric(label,value,context,visual=''){
@@ -265,31 +275,72 @@ function generalMetric(label,value,context,visual=''){
   <h4>${label}</h4><strong>${value.toLocaleString('nl-NL')}</strong><p>${context}</p>${visual}
  </article>`;
 }
-function renderGeneral(tournaments){
+function generalScorerMetric(scorers){
+ const catalogScored=[...scorers].filter(id=>catalogPlayerIds.has(id)).length;
+ const total=catalogPlayerIds.size;
+ const otherScorers=scorers.size-catalogScored;
+ const percentage=new Intl.NumberFormat('nl-NL',{style:'percent',maximumFractionDigits:2}).format(total?catalogScored/total:0);
+ return `<article class="general-metric general-scorers">
+  <h4>Doelpuntenmakers</h4>
+  <strong class="general-scorer-ratio">${catalogScored.toLocaleString('nl-NL')}<span>/${total.toLocaleString('nl-NL')}</span></strong>
+  <p><b>${percentage}</b> van de spelers in de FIFA 22-catalogus heeft gescoord.</p>
+  ${otherScorers?`<p>${otherScorers} buiten de catalogus</p>`:''}
+  <button type="button" class="general-detail" data-general-list="scorers" aria-haspopup="dialog">Bekijk alle doelpuntenmakers</button>
+ </article>`;
+}
+function generalOverview(tournaments){
  const data=generalStatistics(tournaments,teamIds,{onlyPlayed:Boolean(filterDate)});
- const scoringCountries=scorerCountries(data.scorers);
- const topCountries=scorerCountries(data.topScorers);
- const clubCountries=new Map([...data.clubCountries].map(code=>[code,nationalityName(code)]));
+ return {...data,
+  scoringCountries:scorerCountries(data.scorers),
+  topCountries:scorerCountries(data.topScorers),
+  clubCountries:new Map([...data.clubCountries].map(code=>[code,nationalityName(code)]))
+ };
+}
+function openGeneralList(button){
+ const key=button.dataset.generalList;
+ const title=esc(button.closest('.general-metric').querySelector('h4').textContent);
+ const tournaments=filtered();
+ if(key==='scorers'){
+  const players=stats(tournaments).players.sort((a,b)=>b.goals-a.goals||a.name.localeCompare(b.name,'nl'));
+  const filterText=filterTournament||filterDate?' in deze selectie':'';
+  const body=players.length?`<p>${players.length.toLocaleString('nl-NL')} unieke doelpuntenmakers${filterText}</p>
+   <div class="table-wrap"><table>
+    <thead><tr><th scope="col">SPELER</th><th scope="col">GOALS</th></tr></thead>
+    <tbody>${players.map(player=>`<tr><td>${scorerLabel(player)}</td><td class="lime">${player.goals}</td></tr>`).join('')}</tbody>
+   </table></div>`:'<p>Nog geen doelpunten aan spelers toegewezen in deze selectie.</p>';
+  modal(title,body);
+  return;
+ }
+ const items=generalOverview(tournaments)[key];
+ const countries=key==='scoringCountries'||key==='topCountries'||key==='clubCountries';
+ const labels=countries
+  ? [...items].sort(generalCountryOrder).map(([code,name])=>generalCountryLabel(code,name))
+  : [...items.values()].sort(generalTeamOrder).map(team=>`${badge(team.name,team.id)} ${esc(team.name)}`);
+ modal(title,`<ul class="general-detail-list">${labels.map(label=>`<li>${label}</li>`).join('')}</ul>`);
+}
+function renderGeneral(tournaments){
+ const data=generalOverview(tournaments);
+ const {scoringCountries,topCountries,clubCountries}=data;
  const section=(id,icon,title,metrics)=>`<section class="general-group" aria-labelledby="${id}">
   <h3 id="${id}"><span aria-hidden="true">${icon}</span> ${title}</h3>
   <div class="general-grid">${metrics.join('')}</div>
  </section>`;
  return '<div class="section-title"><h2>Algemene statistieken</h2></div>'
   +section('general-goals','⚽','Doelpunten',[
-   generalMetric('Scorende nationaliteiten',scoringCountries.size,'Bekende nationaliteiten van spelers die scoorden',overviewFlags(scoringCountries)),
-   generalMetric('Doelpuntenmakers',data.scorers.size,'Unieke spelers met een toegewezen doelpunt'),
-   generalMetric('Nationaliteiten van topscorers',topCountries.size,'Topscorers per toernooi, inclusief gedeelde eerste plaatsen',overviewFlags(topCountries)),
+   generalMetric('Scorende nationaliteiten',scoringCountries.size,'Bekende nationaliteiten van spelers die scoorden',overviewFlags(scoringCountries,'scoringCountries')),
+   generalScorerMetric(data.scorers),
+   generalMetric('Nationaliteiten van topscorers',topCountries.size,'Topscorers per toernooi, inclusief gedeelde eerste plaatsen',overviewFlags(topCountries,'topCountries')),
    generalMetric('Spelers met een hattrick',data.hatTrickScorers.size,'Minstens drie goals voor hetzelfde team in één wedstrijd')
   ])
   +section('general-clubs','🌍','Clubs en landen',[
-   generalMetric('Gebruikte clubs',data.clubs.size,'Unieke clubs die hebben meegedaan',overviewLogos(data.clubs)),
-   generalMetric('Herkomstlanden van clubs',clubCountries.size,'Landen van de gebruikte clubs',overviewFlags(clubCountries))
+   generalMetric('Gebruikte clubs',data.clubs.size,'Unieke clubs die hebben meegedaan',overviewLogos(data.clubs,'clubs')),
+   generalMetric('Herkomstlanden van clubs',clubCountries.size,'Landen van de gebruikte clubs',overviewFlags(clubCountries,'clubCountries'))
   ])
   +section('general-finals','🏆','Finales en titels',[
-   generalMetric('Verschillende kampioenen',data.champions.size,'Clubs, landenteams en speciale teams met een titel',overviewLogos(data.champions)),
-   generalMetric('Clubs met een titel',data.clubChampions.size,'Unieke clubs die een toernooi wonnen',overviewLogos(data.clubChampions)),
-   generalMetric('Verschillende finalisten',data.finalists.size,'Clubs, landenteams en speciale teams die een finale haalden',overviewLogos(data.finalists)),
-   generalMetric('Clubs in een finale',data.clubFinalists.size,'Unieke clubs die een finale haalden',overviewLogos(data.clubFinalists))
+   generalMetric('Verschillende kampioenen',data.champions.size,'Clubs, landenteams en speciale teams met een titel',overviewLogos(data.champions,'champions')),
+   generalMetric('Clubs met een titel',data.clubChampions.size,'Unieke clubs die een toernooi wonnen',overviewLogos(data.clubChampions,'clubChampions')),
+   generalMetric('Verschillende finalisten',data.finalists.size,'Clubs, landenteams en speciale teams die een finale haalden',overviewLogos(data.finalists,'finalists')),
+   generalMetric('Clubs in een finale',data.clubFinalists.size,'Unieke clubs die een finale haalden',overviewLogos(data.clubFinalists,'clubFinalists'))
   ]);
 }
 function renderStatsSection(){
@@ -463,6 +514,11 @@ function drawGoals(){
 }
 function profile(kind,id){const ts=filtered(),s=stats(ts);if(kind==='team'){const x=s.teams.find(x=>x.id===id);const ms=matches(ts).filter(m=>m.teams.includes(id));const scorers=s.players.filter(p=>p.teams[id]).sort((a,b)=>b.teams[id]-a.teams[id]);modal(esc(x.name),`<p>${x.entries} deelnames · ${x.wins} zeges · ${x.finals} finales · ${x.titles} titels</p><h3>Beste resultaat per toernooi</h3>${ts.filter(t=>t.teamIds.includes(id)).map(t=>{let best=0;t.rounds.forEach((round,r)=>{if(round.some(m=>m.teams.includes(id)))best=r;});return `<p>${esc(t.name)}: ${done(t)&&winner(t.rounds.at(-1)[0])===id?'Kampioen':roundName(t,best)}</p>`;}).join('')}<h3>Eigen topscorers</h3>${scorers.map(p=>`<p>${scorerLabel(p,teamIds.get(id))} · ${p.teams[id]} goals</p>`).join('')||'<p>Nog geen toegewezen goals.</p>'}${archiveRows(ms)}`);}else if(kind==='player'){const p=s.players.find(x=>x.id===id);modal(esc(p.name),`<p>${p.goals} goals in ${p.matchIds.size} wedstrijden</p><h3>Per team</h3>${Object.entries(p.teams).map(([id,n])=>`<p>${esc(s.teams.find(t=>t.id===id)?.name)}: ${n}</p>`).join('')}<h3>Per toernooi</h3>${Object.entries(p.tournaments).map(([id,n])=>`<p>${esc(ts.find(t=>t.id===id)?.name)}: ${n}</p>`).join('')}${archiveRows(matches(ts).filter(m=>p.matchIds.has(m.id)))}`);}else{const d=s.duels[Number(id)];modal('Onderlinge duels',archiveRows(d.matches));}}
 $('#app').addEventListener('click', event => {
+ const generalButton=event.target.closest('[data-general-list]');
+ if(generalButton){
+  openGeneralList(generalButton);
+  return;
+ }
  const viewButton=event.target.closest('[data-scorer-view]');
  if(viewButton){
   if(viewButton.dataset.scorerView!==scorerView){
