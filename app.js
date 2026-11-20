@@ -1,11 +1,11 @@
-import {installPersonalData} from './personal-data.js?v=165e2e95a1a5ce20';
-import {installTeamDrag} from './team-drag.js?v=165e2e95a1a5ce20';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=165e2e95a1a5ce20';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=165e2e95a1a5ce20';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=165e2e95a1a5ce20';
-import {planImport} from './transfer.js?v=165e2e95a1a5ce20';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch,generalStatistics} from './engine.js?v=165e2e95a1a5ce20';
-import {recordBook,recordSections,recordSubjects} from './record-book.js?v=165e2e95a1a5ce20';
+import {installPersonalData} from './personal-data.js?v=73b4d3ada674dd10';
+import {installTeamDrag} from './team-drag.js?v=73b4d3ada674dd10';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=73b4d3ada674dd10';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=73b4d3ada674dd10';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=73b4d3ada674dd10';
+import {planImport} from './transfer.js?v=73b4d3ada674dd10';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch,generalStatistics} from './engine.js?v=73b4d3ada674dd10';
+import {recordBook,recordSections,recordSubjects} from './record-book.js?v=73b4d3ada674dd10';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -313,6 +313,25 @@ function openGeneralList(button){
 }
 let scorerDirectory;
 const directoryName=player=>String(player.displayName||player.name);
+function directoryLeagueFlags(teams){
+ const countries=new Map();
+ for(const team of teams){
+  if(team.type!=='club'||!team.league)continue;
+  const flag=team.flagUrl?.match(/\/([a-z]{2}(?:-[a-z]{3})?)\.png$/i)?.[1];
+  if(!flag)continue;
+  if(!countries.has(team.league))countries.set(team.league,new Map());
+  const votes=countries.get(team.league);
+  votes.set(flag,(votes.get(flag)||0)+1);
+ }
+ const flags=new Map();
+ for(const [league,votes] of countries){
+  const ranked=[...votes].sort((a,b)=>b[1]-a[1]);
+  if(ranked[0][1]!==ranked[1]?.[1])flags.set(league,ranked[0][0]);
+ }
+ // The FIFA 22 catalogue features Wrexham as the only club in this English league.
+ flags.set('English National League','gb-eng');
+ return flags;
+}
 function openScorerDirectory(tournaments){
  const teams=new Map(),rosters=new Map();
  function addVersion(version){
@@ -337,11 +356,15 @@ function openScorerDirectory(tournaments){
   leagues.get(league).push(team);
  }
  const goals=new Map(stats(tournaments).players.map(player=>[player.id,player.goals]));
- scorerDirectory={goals,leagues,rosters};
+ scorerDirectory={goals,leagues,rosters,leagueFlags:directoryLeagueFlags(defaultCatalog.teams)};
  renderScorerDirectory();
 }
 function renderScorerDirectory(league='',teamId=''){
- const {goals,leagues,rosters}=scorerDirectory;
+ const {goals,leagues,rosters,leagueFlags}=scorerDirectory;
+ const leagueFlag=name=>{
+  const flagCode=leagueFlags.get(name);
+  return flagCode?nationalityFlag({flagCode,nationality:nationalityName(flagCode)}):'';
+ };
  const clubs=leagues.get(league);
  const team=clubs?.find(club=>club.id===teamId);
  const competitionLink='<button type="button" data-scorer-directory>Alle competities</button>';
@@ -356,13 +379,16 @@ function renderScorerDirectory(league='',teamId=''){
   content=roster.length?`<ul class="scorer-directory-players">${roster.map(player=>{
    const total=goals.get(player.id)||0;
    const flag=catalogScorers.get(player.id);
+   const positions=player.position||(Array.isArray(player.positions)?player.positions.join(' · '):'');
    return `<li class="${total?'has-scored':''}">
-    <span>${flag?nationalityFlag(flag)+' ':''}${esc(directoryName(player))}</span>
+    <span>${flag?nationalityFlag(flag)+' ':''}${esc(directoryName(player))}
+     <small class="scorer-directory-position">${positions?'Positie: '+esc(positions):'Positie onbekend'}</small>
+    </span>
     ${total?`<strong>${total} ${total===1?'goal':'goals'}</strong>`:''}
    </li>`;
   }).join('')}</ul>`:'<p>Geen spelers beschikbaar voor dit team.</p>';
  }else if(clubs){
-  title=esc(league);
+  title=`${leagueFlag(league)} ${esc(league)}`;
   content=`<ul class="scorer-directory-options">${[...clubs].sort(generalTeamOrder).map(club=>`
    <li><button type="button" data-scorer-directory data-directory-league="${esc(league)}" data-directory-team="${esc(club.id)}">
     ${badge(club.name,club.id)} <span>${esc(club.name)}</span><span aria-hidden="true">›</span>
@@ -371,7 +397,7 @@ function renderScorerDirectory(league='',teamId=''){
   title='Competities en teams';
   content=`<ul class="scorer-directory-options">${[...leagues.keys()].sort((a,b)=>a.localeCompare(b,'nl')).map(name=>`
    <li><button type="button" data-scorer-directory data-directory-league="${esc(name)}">
-    <span>${esc(name)}</span><span aria-hidden="true">›</span>
+    ${leagueFlag(name)} <span>${esc(name)}</span><span aria-hidden="true">›</span>
    </button></li>`).join('')}</ul>`;
  }
  const goalContext=filterTournament||filterDate?'binnen je statistiekfilters':'over alle toernooien';

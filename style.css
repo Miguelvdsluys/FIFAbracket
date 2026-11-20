@@ -468,3 +468,15 @@ dialog:has(#scorer-directory) .modal-head {
     padding: 10px 14px calc(18px + env(safe-area-inset-bottom));
   }
 }
+
+.scorer-directory-options .scorer-flag,
+#scorer-directory-title .scorer-flag {
+  flex: none;
+}
+.scorer-directory-position {
+  display: block;
+  margin-top: 2px;
+  color: #536d56;
+  font-size: 12px;
+  line-height: 1.3;
+}
