@@ -255,3 +255,82 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
   border-radius: 7px;
 }
 .tournament-preview-tile .tile-delete:hover { background: #fff0e9; }
+
+.general-group {
+  margin: 20px 0 28px;
+}
+.general-group h3 {
+  margin: 0 0 12px;
+  color: #253d2b;
+  font-size: 18px;
+}
+.general-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr));
+  gap: 12px;
+}
+.general-metric {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #d7e4d6;
+  border-top: 3px solid #83b17b;
+  border-radius: 10px;
+  background: #fff;
+}
+.general-metric h4 {
+  margin: 0;
+  color: #28402c;
+  font-size: 14px;
+}
+.general-metric > strong {
+  display: block;
+  color: #22512d;
+  font: 700 42px/1.05 'Barlow Condensed', sans-serif;
+  margin: 7px 0;
+}
+.general-metric p {
+  margin: 0;
+  color: #4d6253;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.general-flags, .general-team-logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 11px;
+}
+.general-flags > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #edf4eb;
+  color: #314834;
+}
+.general-team-logo {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border: 1px solid #e3ebe1;
+  border-radius: 50%;
+}
+.general-team-logo .badge {
+  width: 24px;
+  height: 24px;
+}
+@media (max-width: 480px) {
+  .general-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .general-metric { padding: 10px; }
+  .general-metric > strong { font-size: 34px; }
+}
+@media (max-width: 560px) {
+  .stats-main-switcher {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

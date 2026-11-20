@@ -1,11 +1,11 @@
-import {installPersonalData} from './personal-data.js?v=fb85e365c58fc5ee';
-import {installTeamDrag} from './team-drag.js?v=fb85e365c58fc5ee';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=fb85e365c58fc5ee';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=fb85e365c58fc5ee';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=fb85e365c58fc5ee';
-import {planImport} from './transfer.js?v=fb85e365c58fc5ee';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch} from './engine.js?v=fb85e365c58fc5ee';
-import {recordBook,recordSections,recordSubjects} from './record-book.js?v=fb85e365c58fc5ee';
+import {installPersonalData} from './personal-data.js?v=427d56543bb2f809';
+import {installTeamDrag} from './team-drag.js?v=427d56543bb2f809';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=427d56543bb2f809';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=427d56543bb2f809';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=427d56543bb2f809';
+import {planImport} from './transfer.js?v=427d56543bb2f809';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch,generalStatistics} from './engine.js?v=427d56543bb2f809';
+import {recordBook,recordSections,recordSubjects} from './record-book.js?v=427d56543bb2f809';
 let storage, initialState;
 try {
  storage=await initializeStorage();
@@ -27,6 +27,7 @@ if(storage.state){
 }
 let state=initialState,page='dashboard',selected=null,filterTournament='',filterDate='',sort='titles';
 const statsSections = [
+ ['general', 'Algemeen'],
  ['teams', 'Teams'],
  ['scorers', 'Topscorers'],
  ['duels', 'Onderlinge duels'],
@@ -50,6 +51,9 @@ const catalogScorers = new Map(defaultCatalog.players.filter(player => player.fl
 const flagSprite = new URL('./data/nationality-flags.svg', import.meta.url).href;
 const regionNames = new Intl.DisplayNames(['nl'],{type:'region',fallback:'none'});
 const subdivisionNames = {'gb-eng':'Engeland','gb-nir':'Noord-Ierland','gb-sct':'Schotland','gb-wls':'Wales'};
+function nationalityName(code,fallback){
+ return subdivisionNames[code]||regionNames.of(code.toUpperCase())||fallback||code.toUpperCase();
+}
 function nationalityFlag({flagCode,nationality},decorative=false){
  const accessibility=decorative?'aria-hidden="true"':`role="img" aria-label="${esc(nationality)}"`;
  return `<svg class="scorer-flag" ${accessibility}><use href="${esc(flagSprite)}#flag-${esc(flagCode)}"></use></svg>`;
@@ -152,7 +156,7 @@ function rankings(){
   `<button type="button" data-stats-section="${id}" aria-pressed="${id === statsSection}" aria-controls="stats-content">${label}</button>`
  ).join('');
  return title('DE CIJFERS ACHTER DE STRIJD','Statistieken','Wie domineert het veld? Alle bevestigde uitslagen, bij elkaar.',false)
-  + `<div class="stats-switcher" role="group" aria-label="Statistiekonderdelen">${buttons}</div>`
+  + `<div class="stats-switcher stats-main-switcher" role="group" aria-label="Statistiekonderdelen">${buttons}</div>`
   + filters()
   + `<div id="stats-content">${renderStatsSection()}</div>`;
 }
@@ -163,7 +167,7 @@ function nationalityRankings(players){
   if(!source?.flagCode||!source.nationality)continue;
   const {flagCode,nationality}=source;
   if(!nationalities.has(flagCode)){
-   const displayName=subdivisionNames[flagCode]||regionNames.of(flagCode.toUpperCase())||nationality;
+   const displayName=nationalityName(flagCode,nationality);
    nationalities.set(flagCode,{flagCode,nationality:displayName,goals:0,players:[]});
   }
   const group=nationalities.get(flagCode);
@@ -233,8 +237,64 @@ function renderRecords(tournaments){
    : 'Goals en gelijke spelen volgen de eindstand vóór de strafschoppenserie. De serie beslist wel wie wint en verliest.';
  return selection+`<p class="muted">${note}</p>`+recordTable(['RECORDHOUDER','RECORDWAARDE','TOERNOOI','DATUM'],tableRows);
 }
+function scorerCountries(ids){
+ const countries=new Map();
+ for(const id of ids){
+  const source=catalogScorers.get(id);
+  if(source) countries.set(source.flagCode,nationalityName(source.flagCode,source.nationality));
+ }
+ return countries;
+}
+function overviewFlags(countries){
+ if(!countries.size)return '';
+ const ordered=[...countries].sort((a,b)=>a[1].localeCompare(b[1],'nl'));
+ const chips=ordered.slice(0,6).map(([flagCode,nationality])=>
+  `<span>${nationalityFlag({flagCode,nationality},true)} ${esc(nationality)}</span>`);
+ if(ordered.length>chips.length)chips.push(`<span>+${ordered.length-chips.length} meer</span>`);
+ return `<div class="general-flags">${chips.join('')}</div>`;
+}
+function overviewLogos(teams){
+ if(!teams.size)return '';
+ const ordered=[...teams.values()].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
+ const logos=ordered.slice(0,5).map(team=>`<span class="general-team-logo" title="${esc(team.name)}" role="img" aria-label="${esc(team.name)}">${badge(team.name,team.id)}</span>`);
+ if(ordered.length>logos.length)logos.push(`<span class="muted">+${ordered.length-logos.length} meer</span>`);
+ return `<div class="general-team-logos">${logos.join('')}</div>`;
+}
+function generalMetric(label,value,context,visual=''){
+ return `<article class="general-metric">
+  <h4>${label}</h4><strong>${value.toLocaleString('nl-NL')}</strong><p>${context}</p>${visual}
+ </article>`;
+}
+function renderGeneral(tournaments){
+ const data=generalStatistics(tournaments,teamIds,{onlyPlayed:Boolean(filterDate)});
+ const scoringCountries=scorerCountries(data.scorers);
+ const topCountries=scorerCountries(data.topScorers);
+ const clubCountries=new Map([...data.clubCountries].map(code=>[code,nationalityName(code)]));
+ const section=(id,icon,title,metrics)=>`<section class="general-group" aria-labelledby="${id}">
+  <h3 id="${id}"><span aria-hidden="true">${icon}</span> ${title}</h3>
+  <div class="general-grid">${metrics.join('')}</div>
+ </section>`;
+ return '<div class="section-title"><h2>Algemene statistieken</h2></div>'
+  +section('general-goals','⚽','Doelpunten',[
+   generalMetric('Scorende nationaliteiten',scoringCountries.size,'Bekende nationaliteiten van spelers die scoorden',overviewFlags(scoringCountries)),
+   generalMetric('Doelpuntenmakers',data.scorers.size,'Unieke spelers met een toegewezen doelpunt'),
+   generalMetric('Nationaliteiten van topscorers',topCountries.size,'Topscorers per toernooi, inclusief gedeelde eerste plaatsen',overviewFlags(topCountries)),
+   generalMetric('Spelers met een hattrick',data.hatTrickScorers.size,'Minstens drie goals voor hetzelfde team in één wedstrijd')
+  ])
+  +section('general-clubs','🌍','Clubs en landen',[
+   generalMetric('Gebruikte clubs',data.clubs.size,'Unieke clubs die hebben meegedaan',overviewLogos(data.clubs)),
+   generalMetric('Herkomstlanden van clubs',clubCountries.size,'Landen van de gebruikte clubs',overviewFlags(clubCountries))
+  ])
+  +section('general-finals','🏆','Finales en titels',[
+   generalMetric('Verschillende kampioenen',data.champions.size,'Clubs, landenteams en speciale teams met een titel',overviewLogos(data.champions)),
+   generalMetric('Clubs met een titel',data.clubChampions.size,'Unieke clubs die een toernooi wonnen',overviewLogos(data.clubChampions)),
+   generalMetric('Verschillende finalisten',data.finalists.size,'Clubs, landenteams en speciale teams die een finale haalden',overviewLogos(data.finalists)),
+   generalMetric('Clubs in een finale',data.clubFinalists.size,'Unieke clubs die een finale haalden',overviewLogos(data.clubFinalists))
+  ]);
+}
 function renderStatsSection(){
  const tournaments=filtered();
+ if(statsSection==='general')return renderGeneral(tournaments);
  if(statsSection==='records')return renderRecords(tournaments);
  const s=stats(tournaments);
  switch (statsSection) {

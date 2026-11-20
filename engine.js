@@ -129,6 +129,74 @@ export function stats(ts){
  addPlayerAppearances(ts,players);
  return {teams:[...teams.values()],players:[...players.values()],duels:[...duels.values()],homeWins,awayWins};
 }
+const clubCountryOverrides={
+ 'sofifa:team:69':'mc',
+ 'sofifa:team:1960':'gb-wls',
+ 'sofifa:team:1961':'gb-wls',
+ 'sofifa:team:112254':'gb-wls',
+ 'sofifa:team:445':'gb-nir'
+};
+function clubCountry(team){
+ return clubCountryOverrides[team.id]
+  || team.flagUrl?.match(/\/([a-z]{2}(?:-[a-z]{3})?)\.png(?:[?#].*)?$/i)?.[1].toLowerCase();
+}
+export function generalStatistics(tournaments,catalogTeams,{onlyPlayed=false}={}){
+ const scorers=new Set(),topScorers=new Set(),hatTrickScorers=new Set(),clubCountries=new Set();
+ const clubs=new Map(),champions=new Map(),finalists=new Map();
+ const clubChampions=new Map(),clubFinalists=new Map();
+ for(const tournament of tournaments){
+  const played=matches([tournament]);
+  const teams=new Map(tournament.version.teams.map(team=>[team.id,team]));
+  const resolve=id=>{
+   const current=catalogTeams.get(id);
+   const snapshot=teams.get(id);
+   return current?{...snapshot,...current}:snapshot;
+  };
+  const participants=onlyPlayed?new Set(played.flatMap(match=>match.teams)):tournament.teamIds;
+  for(const id of participants){
+   const team=resolve(id);
+   if(team?.type!=='club')continue;
+   clubs.set(id,team);
+   const country=clubCountry(team);
+   if(country)clubCountries.add(country);
+  }
+  const final=tournament.rounds.at(-1)[0];
+  if(final.result||!onlyPlayed&&tournament.rounds.length>1){
+   for(const id of final.teams.filter(Boolean)){
+    const team=resolve(id);
+    if(!team)continue;
+    finalists.set(id,team);
+    if(team.type==='club')clubFinalists.set(id,team);
+   }
+  }
+  if(final.result){
+   const id=winner(final);
+   const team=resolve(id);
+   if(team){
+    champions.set(id,team);
+    if(team.type==='club')clubChampions.set(id,team);
+   }
+  }
+  const goalsPerTournament=new Map();
+  for(const match of played){
+   const goalsPerSide=[new Map(),new Map()];
+   for(const goal of match.result.goals){
+    if(goal.kind!=='player')continue;
+    const id=goal.playerId;
+    scorers.add(id);
+    goalsPerTournament.set(id,(goalsPerTournament.get(id)||0)+goal.count);
+    const side=goalsPerSide[goal.side];
+    side.set(id,(side.get(id)||0)+goal.count);
+    if(side.get(id)>=3)hatTrickScorers.add(id);
+   }
+  }
+  const best=Math.max(0,...goalsPerTournament.values());
+  for(const [id,total] of goalsPerTournament){
+   if(total===best)topScorers.add(id);
+  }
+ }
+ return {scorers,topScorers,hatTrickScorers,clubCountries,clubs,champions,finalists,clubChampions,clubFinalists};
+}
 export function records(tournaments){
  const teams=new Map();
  for(const tournament of tournaments){
