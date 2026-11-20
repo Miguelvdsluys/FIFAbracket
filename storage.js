@@ -1,5 +1,5 @@
-import { connect } from './account.js?v=73b4d3ada674dd10';
-import { createAccountStorage } from './account-storage.js?v=73b4d3ada674dd10';
+import { connect } from './account.js?v=c09ce07adec7ab4d';
+import { createAccountStorage } from './account-storage.js?v=c09ce07adec7ab4d';
 
 const browserStorage=document.documentElement.dataset.storage==='browser';
 let db;
