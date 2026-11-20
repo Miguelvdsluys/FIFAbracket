@@ -142,6 +142,10 @@ dialog.team-picker-modal{inset:0;margin:0;border:0;border-radius:0;width:100vw;m
 .tournament-preview-title {
   font: 600 clamp(23px, 4vw, 34px) 'Barlow Condensed', sans-serif;
   overflow-wrap: anywhere;
+  padding: 3px 10px;
+  border: 1px solid #24382c38;
+  border-radius: 7px;
+  background: #ffffffe8;
 }
 .tournament-preview {
   align-self: center;

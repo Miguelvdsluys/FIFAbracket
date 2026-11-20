@@ -1,11 +1,11 @@
-import {installPersonalData} from './personal-data.js?v=db887a1836fdb69d';
-import {installTeamDrag} from './team-drag.js?v=db887a1836fdb69d';
-import {bracketLayout,linearBracketLayout} from './bracket.js?v=db887a1836fdb69d';
-import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=db887a1836fdb69d';
-import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=db887a1836fdb69d';
-import {planImport} from './transfer.js?v=db887a1836fdb69d';
-import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch} from './engine.js?v=db887a1836fdb69d';
-import {recordBook,recordSections,recordSubjects} from './record-book.js?v=db887a1836fdb69d';
+import {installPersonalData} from './personal-data.js?v=9b75b7ceeb47db7f';
+import {installTeamDrag} from './team-drag.js?v=9b75b7ceeb47db7f';
+import {bracketLayout,linearBracketLayout} from './bracket.js?v=9b75b7ceeb47db7f';
+import {loadBuiltInCatalog,withDefaultCatalog,withSpecialTeams} from './catalog.js?v=9b75b7ceeb47db7f';
+import {initializeStorage,loadLocalState,loadState,saveState} from './storage.js?v=9b75b7ceeb47db7f';
+import {planImport} from './transfer.js?v=9b75b7ceeb47db7f';
+import {createTournament,addTeam,editTeam,openTeamSlots,winner,saveResult,matches,stats,nextTournamentMatch} from './engine.js?v=9b75b7ceeb47db7f';
+import {recordBook,recordSections,recordSubjects} from './record-book.js?v=9b75b7ceeb47db7f';
 let storage, initialState;
 try {
  storage=await initializeStorage();
